@@ -1,0 +1,97 @@
+body{
+    margin: 0;
+    padding: 0;
+}
+
+.main{
+    width: 77%;
+    padding: 8px;
+    border-radius: 5px;
+    background-color: #fafafa;
+    margin: 3px 310px auto;
+    min-height: 100vh;
+    resize: vertical;
+    position: relative;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    text-align: center;
+    bottom: 2px;
+}
+
+.menu {
+    margin: auto;
+    text-align: left;
+
+}
+
+.MuiButtonBase-root.MuiTab-root.MuiTab-textColorInherit.activated{
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    border-width: 1px 1px 0 1px;
+    color: #326AAA;
+    display: inline-block;
+    font-style: italic;
+    font-weight: bolder;
+    margin-bottom: -1px auto;
+    min-width: 12.2%;
+    padding: 0.15rem 0.2rem;
+
+}
+
+button.MuiButtonBase-root.MuiTab-root.MuiTab-textColorInherit.tab{
+    border: 1px solid;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: -1px auto;
+    padding: 0.15rem 0.2rem;
+    border-width: 0 0 1px 0;
+    min-width: 12.2%;
+    cursor: pointer;
+    color:#326AAA;
+}
+
+.table{
+    margin: 5px 5px auto;
+}
+
+.groups .tabs{
+    margin: 0px 10px auto ;
+    width: 100%;
+}
+.actions{
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    position: relative;
+    bottom: -5px;
+    width: 100%;
+}
+
+.actions button{
+    padding: 5px;
+    width: 13%;
+    height: 45px;
+    border-radius: 5px;
+    border: 0;
+    background: #da552f;
+    color: #FFF;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+
+}
+.actions button[disabled]{
+    opacity: 0.5;
+    cursor: default;
+
+}
+.actions button[disabled]:hover{
+    opacity: 0.5;
+    cursor:not-allowed;
+}
+.actions button:hover{
+    opacity: 0.7;
+}

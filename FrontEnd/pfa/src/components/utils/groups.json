@@ -1,0 +1,12 @@
+
+{ 
+    "groups": [
+    { "value": 2824, "label": "Prefeitura de Ponta Grossa - PMPG" },
+    { "value": 2831, "label": "Prefeitura de Ponta Grossa - SME - ESCOLA" },
+    { "value": 2832, "label": "Prefeitura de Ponta Grossa - SME - CMEI" },
+    { "value": 2833, "label": "Prefeitura de Ponta Grossa - SMS - PAB" },
+    { "value": 2834, "label": "Prefeitura de Ponta Grossa - SMS - FAE" },
+    { "value": 2835, "label": "Prefeitura de Ponta Grossa - SMS - AIH" },
+    { "value": 2855, "label": "Prefeitura de Ponta Grossa - SAMU" },
+    { "value": 2857, "label": "Prefeitura de Ponta Grossa - BOMBEIROS" }
+]}
