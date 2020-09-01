@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import Menu from "../../menu/menu";
 import Select from 'react-select';
 import api from "../../../services/api";
+import { checkArray } from '../../../utils/bytes';
 import '../index.css';
 
 
@@ -43,7 +44,13 @@ export default class backupDone extends Component {
 
     handleSubmit = async e => {
         const { periodSelected } = this.state;
-        await api.get(`/backup/${periodSelected.value}`);
+        try{
+            checkArray(periodSelected);
+            await api.get(`/backup/${periodSelected.value}`);
+        } catch(err){
+            console.log(err);
+            return alert('Não há backups para serem realizados')
+        }
         this.setState(({periodSelected: null}));
         this.backupDone();
         this.toBackup();

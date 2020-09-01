@@ -5,6 +5,7 @@ import { Tab, Tabs } from '@material-ui/core';
 import Table from '../../../utils/table/table';
 import Data from "../../../services/api";
 import { Form, Container } from "./styles";
+import { checkArray } from '../../../utils/bytes';
 
 const columns = "TIPO.ORIGEM.DATA.HORA.DESTINO.CIDADE_DESTINO.DURACAO_REAL.CUSTO.VALIDAR_AGRUPAMENTO.VALIDAR_HORA";
 const heads = ["TIPO",
@@ -115,8 +116,7 @@ export default class showBilling extends Component {
     findPage = () => {
         const { contentInfo } = this.state;
         if ((this.refs.newPage.value < 1) || (this.refs.newPage.value > contentInfo.Pages.Pages)) {
-            alert('A página solicitada não existe. Favor corrigir sua busca.');
-            return;
+            return alert('A página solicitada não existe. Favor corrigir sua busca.');
         }
         const page = this.refs.newPage.value;
         this.loadContent(parseInt(page));
@@ -124,27 +124,30 @@ export default class showBilling extends Component {
 
     handleChange = async (event, newValue) => {
         const { selectedYear, selectedMonth } = this.state;
-        try {
             const page = 1;
             const value = newValue;
             const post = await Data.get(`/faturamento/${value}/${selectedYear.value}${selectedMonth.value}/${page}`);
             const { docs, ...contentInfo } = post.data
-            this.setState({ selectedTab: value, content: docs, contentInfo, pages: contentInfo.Pages.Pages, page });
+        try {    
+            checkArray(docs);
         } catch (error) {
             console.log(error);
         }
+        this.setState({ selectedTab: value, content: docs, contentInfo, pages: contentInfo.Pages.Pages, page });
     };
 
     handleSubmit = async e => {
         const { selectedYear, selectedMonth, selectedTab, page } = this.state;
-
         const response = await Data.get(`/faturamento/${selectedTab}/${selectedYear.value}${selectedMonth.value}/${page}`);
-        // console.log("Pages", response);
         const { docs, ...contentInfo } = response.data;
-        // console.log(docs);
+        try {
+            checkArray(docs);
+        } catch(err){
+            console.log(err);
+            return alert(`Não há dados processados para o mês de ${selectedMonth.label} de ${selectedYear.value}!`);
+        }
         this.setState({ selectedTab, content: docs, pages: contentInfo.Pages.Pages, page });
-        // this.download();
-        // console.log(response);
+        
     }
 
     handleSubmitDownload = async (e) => {
@@ -168,6 +171,9 @@ export default class showBilling extends Component {
                     link.setAttribute('download', `Files_${year}${month}.zip`); //or any other extension
                     document.body.appendChild(link);
                     link.click();
+                }).catch((err) => {
+                    console.log(err);
+                    return alert(`Não há dados processados para o mês de ${selectedMonth.label} de ${selectedYear.value}!`);
                 });
 
             } catch (err) {
@@ -187,38 +193,6 @@ export default class showBilling extends Component {
         this.setState({ selectedOption: event });
     }
 
-    // download = () => {
-    //     const { selectedOption } = this.state;
-    //     const download = (
-
-    //         <div className="radio">
-    //             <Container>
-    //                 <Form onSubmit={this.handleSubmitDownload}>
-    //                     <input
-    //                         id="XLSX"
-    //                         type="radio"
-    //                         className="radio"
-    //                         name="radioExcel"
-    //                         value="XLSX"
-    //                         checked={selectedOption === "XLSX"}
-    //                         onChange={this.handleOptionChange} />
-    //                     <label for="XLSX">Excel</label>
-    //                     <input
-    //                         id="PDF"
-    //                         name="radioPdf"
-    //                         className="radio"
-    //                         type="radio"
-    //                         value="PDF"
-    //                         checked={selectedOption === "PDF"}
-    //                         onChange={this.handleOptionChange} />
-    //                     <label for="PDF">PDF</label>
-    //                     <button type="submit">Download</button>
-    //                 </Form>
-    //             </Container>
-    //         </div>
-    //     )
-    //     this.setState({ download })
-    // }
 
     showBilling = () => {
         const { content, page, pages } = this.state;
@@ -276,10 +250,10 @@ export default class showBilling extends Component {
                         placeholder="Selecione o Mês"
                         isSearchable />
                     <button className="findButton" onClick={this.handleSubmit}>Pesquisar</button>
-                    </div>
-                    
-                    <Container>
-                        <Form onSubmit={this.handleSubmitDownload}>
+                </div>
+
+                <Container>
+                    <Form onSubmit={this.handleSubmitDownload}>
                         <div className="radio">
                             <input
                                 id="XLSX"
@@ -299,13 +273,13 @@ export default class showBilling extends Component {
                                 checked={selectedOption === "PDF"}
                                 onChange={this.handleOptionChange} />
                             <label for="PDF">PDF</label>
-                            </div>
-                            <button type="submit">Download</button>
-                        </Form>
-                    </Container>
-                    
-                    
-                
+                        </div>
+                        <button type="submit">Download</button>
+                    </Form>
+                </Container>
+
+
+
 
                 {this.showBilling()}
             </div>

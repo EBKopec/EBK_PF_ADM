@@ -4,6 +4,7 @@ import Select from 'react-select';
 import Table from '../../../utils/table/table';
 import Group from '../../../utils/groups.json';
 import api from "../../../services/api";
+import { checkArray } from '../../../utils/bytes'; 
 // import { Form, Container } from "./styles";
 
 const columns = "USER_CODE.GRUPO.CALL_TYPE.COST.MIN_TELEPHONE_FRANCHISE.VALUES_TELEPHONE_FRANCHISE.VALUE_EXTENSION";
@@ -108,10 +109,17 @@ export default class ShowFares extends Component {
     handleSubmit = async (e) => {
         e.preventDefault();
         let types = [];
+        var response;
         const { page, groupSelected } = this.state;
-        const response = await api.get(`/fares/${groupSelected.value}/${page}`);
-        const { docs, ...contentInfo } = response.data;
+        try {
+            response = await api.get(`/fares/${groupSelected.value}/${page}`);    
+            checkArray(response.data.docs);
+        } catch (err) {
+            console.log(err);
+            return alert('Favor escolher um grupo!');
+        }
         // console.log(docs)
+        const { docs, ...contentInfo } = response.data; 
         types = docs.map((tp) => { return { value: tp.TYPE_CALL_ID, label: tp.CALL_TYPE, group: tp.USER_CODE } }).filter((gp) => gp.group === groupSelected.value );
         this.setState({ content: docs, pages: contentInfo.Pages.Pages, page, types});
         this.selectDelete();

@@ -3,6 +3,7 @@ import Select from 'react-select';
 import Menu from "../../menu/menu";
 import Table from '../../../utils/table/table';
 import Data from "../../../services/api";
+import { checkArray } from '../../../utils/bytes'; 
 
 const columns = "linha.Grupo.ATIVADOS_MES.DESCONECTADOS.EM_ATIVACAO";
 const heads = [ 
@@ -56,14 +57,16 @@ export default class SearchExtsMonth extends Component {
 
     handleSubmit = async () => {
         const { selectedYear, selectedMonth, page} = this.state
+        const YM = (this.state.selectedYear.value && this.state.selectedMonth.value) === undefined ? `${selectedYear}${selectedMonth}` : `${this.state.selectedYear.value}${this.state.selectedMonth.value}`
+        const response = await Data.get(`/extensions/desc/${YM}/${page}`);
+        const { docs, ...contentInfo } = response.data;
         try {
-            const YM = (this.state.selectedYear.value && this.state.selectedMonth.value) === undefined ? `${selectedYear}${selectedMonth}` : `${this.state.selectedYear.value}${this.state.selectedMonth.value}`
-            const response = await Data.get(`/extensions/desc/${YM}/${page}`);
-            const { docs, ...contentInfo } = response.data;
-            this.setState({ content: docs, pages: contentInfo.Pages.Pages, page  });
+            checkArray(docs)
         } catch (error) {
             console.log(error);
+            return alert(`Não há ramais para o mês de ${selectedMonth.label} de ${selectedYear.value}!`);
         }
+        this.setState({ content: docs, pages: contentInfo.Pages.Pages, page  });
     }
 
     showExts = () => {

@@ -3,6 +3,7 @@ import Menu from "../../menu/menu";
 import Select from 'react-select';
 import Table from '../../../utils/table/table';
 import api from "../../../services/api";
+import { checkArray } from '../../../utils/bytes';
 
 const columns = "linha.Grupo.user_group_id.tipo_linha.status.data_envio_nova.data_validacao_cliente.PROPORCIONAL.data_alteracao.data_cancelamento";
 const heads = [ 
@@ -108,10 +109,13 @@ export default class SearchExts extends Component {
     handleSubmit = async (e) => {
         e.preventDefault();
         const { page, extSelected } = this.state;
+        try {
+            checkArray(extSelected);
+        } catch (error) {
+            return alert('Favor escolher um ramal para pesquisa!');
+        }
         const response = await api.get(`/extensions/${extSelected.value}/${page}`);
         const { docs, ...contentInfo } = response.data;
-        // console.log(docs)
-        
         this.setState({content: docs, pages: contentInfo.Pages.Pages, page, extSelected: null})
 
     }
