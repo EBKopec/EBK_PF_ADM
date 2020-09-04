@@ -45,6 +45,7 @@ export default class backupDone extends Component {
     handleSubmit = async e => {
         const { periodSelected } = this.state;
         try{
+            // console.log('period',periodSelected.value);
             checkArray(periodSelected);
             await api.get(`/backup/${periodSelected.value}`);
         } catch(err){

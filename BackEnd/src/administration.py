@@ -4,6 +4,7 @@ from app import PMPG
 from sqls import sqls
 import locale
 import json
+from utils import utils
 pd.options.mode.chained_assignment = None
 locale.setlocale(locale.LC_ALL, '')
 
@@ -33,9 +34,23 @@ class administrationExtensions():
         ex = self.sql.getGroup(group, month)
         exc = self.sql.excessCons(group)
         data = self.pmpg.execOperation(ex[0], ex[1])
+        # print('TMP', data)
+        # data = pd.DataFrame(tmp, columns=['TIPO', 'Soma_Duracao', 'Soma_Custo'])
         data2 = self.pmpg.execOperation(exc[0], exc[1])
+        
         df = pd.DataFrame.from_records(data2, columns=["TIPO", "VALOR_MIN", "FRANQUIA_MIN", "FRANQUIA_VALOR"])
-        data.columns = ['TIPO', 'Soma_Duracao', 'Soma_Custo']
+        
+        if data.empty:
+            default = {'TIPO': ['LDN','LOCAL', 'MOVEL'],
+                    'Soma_Custo': [0,0,0],
+                    'Soma_Duracao':['0','0','0'] }
+            data = pd.DataFrame(default, columns=['TIPO', 'Soma_Duracao', 'Soma_Custo']).fillna(0).sort_values('TIPO', ascending=True).reset_index(drop=True)
+        else:
+            data.columns = ['TIPO', 'Soma_Duracao', 'Soma_Custo']
+        #data.columns = ['TIPO', 'Soma_Duracao', 'Soma_Custo']
+        # print('Data', type(data),'\n\n', data)
+        # print('df', type(df),'\n\n', df)
+        #data.columns = ['TIPO', 'Soma_Duracao', 'Soma_Custo']
         dfExc = pd.merge(left=data, right=df, on=['TIPO'], how='outer').fillna(0).sort_values('TIPO', ascending=True).reset_index(drop=True)
         dfExc['EXCEDENTE_VALOR'] = dfExc['Soma_Custo'].astype(float) - dfExc['FRANQUIA_VALOR'].astype(float)
         dfExc['EXCEDENTE_MIN'] = (pd.Series(
@@ -54,16 +69,20 @@ class administrationExtensions():
                                          , columns=['RAMAL', 'GRUPO', 'DATA_INSTALACAO', 'DATA_ATIVACAO'
                 , 'DATA_CANCELAMENTO', 'VALOR_RAMAL', 'STATUS', 'PROPORCIONAL'])
         xp = exc.fillna(0)
+        data['DATA_ATIVACAO_REF'] = pd.to_datetime(data['DATA_ATIVACAO'], errors='coerce').dt.strftime('%Y%m')
         data['PROPORCIONAL'] = data['PROPORCIONAL'].astype('float')
         data['VALOR_RAMAL'] = data['VALOR_RAMAL'].astype('float')
         faturar = pd.DataFrame()
-        faturar['RAMAL_ATIVO'] = data.query("STATUS in ('Y','N') and PROPORCIONAL != '0.00' ").groupby('GRUPO')[
-            'RAMAL'].count()
+        faturar['RAMAL_ATIVO'] = data.query(" STATUS in ('Y','N') "
+                                            " and PROPORCIONAL != '0.00' "
+                                            " and DATA_ATIVACAO_REF <= @utils.monthId(@month)").groupby('GRUPO')['RAMAL'].count()
         faturar['VALOR_RAMAL'] = data.groupby('GRUPO')['VALOR_RAMAL'].unique().astype(float)
         faturar['PARCIAL'] = data.query(" STATUS in ('Y','N') "
-                                        " and PROPORCIONAL != '19.23'").groupby('GRUPO')['PROPORCIONAL'].sum()
-        faturar['FATURAR_RAMAIS'] = data.query(" STATUS in ('Y','N') and PROPORCIONAL != '0.00' ").groupby('GRUPO')[
-            'PROPORCIONAL'].sum()
+                                        " and PROPORCIONAL != '19.23' "
+                                        " and DATA_ATIVACAO_REF <= @utils.monthId(@month)").groupby('GRUPO')['PROPORCIONAL'].sum()
+        faturar['FATURAR_RAMAIS'] = data.query(" STATUS in ('Y','N') "
+                                               " and PROPORCIONAL != '0.00' "
+                                               " and DATA_ATIVACAO_REF <= @utils.monthId(@month)").groupby('GRUPO')['PROPORCIONAL'].sum()
         faturar['FRANQUIAS'] = xp['FRANQUIA_VALOR'].sum()
         faturar['EXCEDENTES'] = xp['EXCEDENTE_VALOR'].sum()
         faturar['TOTAL_FATURAR'] = faturar['FATURAR_RAMAIS'] + faturar['FRANQUIAS'] + faturar['EXCEDENTES']
@@ -143,10 +162,12 @@ class administrationExtensions():
         totalBilling = self.preResCon(group,month)
         totalBilling.insert(0,'mes_id', month)
         totalBilling.insert(1,'group', group)
+        
         totalBilling['total'] = totalBilling['LDN_TOTAL_VALOR'] + totalBilling['LOCAL_TOTAL_VALOR'] + totalBilling['MOVEL_TOTAL_VALOR']
         
         data = []
         for v in totalBilling.itertuples(index=False,name=None):
+            # print('totalBilling', v)
             data.append(v)
 
         self.pmpg.putData(data, 'resumo_consumo', month)
@@ -186,11 +207,11 @@ class administrationExtensions():
 # run.shutOffExt('9998')
 # run.changeExt('8888','2824')
 # grupos = {'PMPG': ['PMPG', 'SME_ESCOLA', 'SME_CMEI']
-#                  , 'FMS': ['SMS_AIH', 'SMS_PAB']}
+#                 , 'FMS': ['SMS_AIH', 'SMS_PAB']}
 
 # run = administrationExtensions()
-# # run.saveTotal('SME_CMEI',20204)
+# # # run.saveTotal('SME_CMEI',20204)
 
 # for index in grupos:
 #     for value in grupos[index]:
-#         run.saveTotal(value,20202)
+#          run.preResCon(value, 20201)

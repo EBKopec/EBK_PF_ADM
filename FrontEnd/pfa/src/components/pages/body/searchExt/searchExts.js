@@ -110,7 +110,7 @@ export default class SearchExts extends Component {
         e.preventDefault();
         const { page, extSelected } = this.state;
         try {
-            checkArray(extSelected);
+            checkArray(extSelected.value);
         } catch (error) {
             return alert('Favor escolher um ramal para pesquisa!');
         }

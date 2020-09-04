@@ -8,10 +8,10 @@ from os.path import basename
 def monthId(month_id):
     if len(str(month_id)) == 5:
         monthId = str(month_id)[0:4] + '0' + str(month_id)[4:]
-        print(monthId)
+        # print(monthId)
         return monthId
     else:
-        print(month_id)
+        # print(month_id)
         return month_id
 
 # Check dir

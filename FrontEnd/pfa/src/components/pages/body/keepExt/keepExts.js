@@ -17,7 +17,7 @@ export default class registerExts extends Component {
             ext: null,
             group: null,
             info: [],
-            status: 'P',
+            status: ['P','N'],
             dt_event: null,
             toChange: 'Y',
         }
@@ -69,8 +69,8 @@ export default class registerExts extends Component {
         let toChange = null;
 
         if (changeEvent.target.id === 'activateExt') {
-            status = 'P';
-            toChange = 'Y'
+            status = ['P','N'];
+            toChange = 'Y';
             event = changeEvent.target.value;
         }
         if (changeEvent.target.id === 'changeExt') {
