@@ -18,10 +18,11 @@ class PMPG():
         #year = str(date.today().year)
         #month = str(date.today().month)
         #ym = year + "" + month
-        self.url_vsc = 'Driver={SQL Server};server=189.85.23.20,25789;DATABASE=VSCDB;UID=everton.kopec;PWD=Nova@123'
-        self.url_nova = 'DRIVER={MySQL ODBC 8.0 ANSI Driver};SERVER=localhost;' \
-                        'PORT=3306;DATABASE=novafibra;UID=app;PWD=Bigodao@00;charset=utf8mb4'
-        self.url_nova_proc = c.connect(user='app', password='Bigodao@00', db='novafibra', host='localhost', auth_plugin='mysql_native_password')
+        #self.url_vsc = 'Driver={SQL Server};server=189.85.23.20,25789;DATABASE=VSCDB;UID=everton.kopec;PWD=Nova@123'
+        #self.url_vsc = 'server=189.85.23.20:25789, user=everton.kopec, password=Nova@123, database=VSCDB'
+        self.url_nova = 'DRIVER={MySQL ODBC 8.0 ANSI Driver};SERVER=10.85.24.17;' \
+                        'PORT=3306;DATABASE=NovaFibra;UID=pfa;PWD=NovaFibr@2020;charset=utf8mb4'
+        self.url_nova_proc = c.connect(user='pfa', password='NovaFibr@2020', db='NovaFibra', host='10.85.24.17', auth_plugin='mysql_native_password')
         self.sql = sqls()
         #self.month = '20207'
         self.listGroupsCreated = []
@@ -31,10 +32,13 @@ class PMPG():
 
     # Create Connection
     def createConn(self):
-        conn_vsc = pd.connect(self.url_vsc)
-        conn_nova = pd.connect(self.url_nova)
-        conn_nova_proc = self.url_nova_proc
-        return conn_vsc, conn_nova, conn_nova_proc
+        try:
+            conn_vsc = pymssql.connect(server='189.85.23.20:25789', user='everton.kopec', password='Nova@123', database='VSCDB')
+            conn_nova = pd.connect(self.url_nova)
+            conn_nova_proc = self.url_nova_proc
+            return conn_vsc, conn_nova, conn_nova_proc
+        except Exception:
+            print('Error', Exception)
     
 
     def execOperation(self, exec, ins, *values):
@@ -118,7 +122,7 @@ class PMPG():
     # To: Nova Fibra Database
     def importVSCtoNF(self, month):
         
-        getData = self.sql.getDataFaturamento("FATURAMENTO", month)
+        getData = self.sql.getDataFaturamento("faturamento", month)
         results = self.execOperation(getData[0], getData[1], getData[2])
         data = []
         for i in results:
