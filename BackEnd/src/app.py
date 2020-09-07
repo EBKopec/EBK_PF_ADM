@@ -1,4 +1,3 @@
-from __future__ import print_function
 from sqls import sqls
 from datetime import datetime, date
 from tqdm.auto import tqdm
@@ -12,33 +11,29 @@ import pyodbc as pd
 import sys
 import locale
 from builtins import FileNotFoundError
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 class PMPG():
     def __init__(self):
-        #year = str(date.today().year)
-        #month = str(date.today().month)
-        #ym = year + "" + month
         #self.url_vsc = 'Driver={SQL Server};server=189.85.23.20,25789;DATABASE=VSCDB;UID=everton.kopec;PWD=Nova@123'
-        #self.url_vsc = 'server=189.85.23.20:25789, user=everton.kopec, password=Nova@123, database=VSCDB'
-        self.url_nova = 'DRIVER={MySQL ODBC 8.0 ANSI Driver};SERVER=10.85.24.17;' \
-                        'PORT=3306;DATABASE=NovaFibra;UID=pfa;PWD=NovaFibr@2020;charset=utf8mb4'
+        self.url_vsc = 'Driver={ODBC Driver 17 for SQL Server};server=189.85.23.20,25789;DATABASE=VSCDB;UID=everton.kopec;PWD=Nova@123'
+        # self.url_nova = 'DRIVER={MySQL ODBC 8.0 ANSI Driver};SERVER=10.85.24.17;' \
+        #                 'PORT=3306;DATABASE=NovaFibra;UID=pfa;PWD=NovaFibr@2020;charset=utf8mb4'
+        self.url_nova = 'Driver={MariaDB ODBC 3.0 Driver};server=10.85.24.17;PORT=3306;DATABASE=novafibra;UID=pfa;PWD=NovaFibr@2020'
         self.url_nova_proc = c.connect(user='pfa', password='NovaFibr@2020', db='NovaFibra', host='10.85.24.17', auth_plugin='mysql_native_password')
         self.sql = sqls()
-        #self.month = '20207'
         self.listGroupsCreated = []
-        # self.file_to_write = ""
         self.groups = {'PMPG': ['PMPG', 'PMPG_0800', 'SME_ESCOLA', 'SME_CMEI']
                     , 'FMS': ['SMS_AIH', 'SMS_AIH_0800', 'SMS_PAB', 'SMS_PAB_0800']}
 
     # Create Connection
     def createConn(self):
-        try:
-            conn_vsc = pymssql.connect(server='189.85.23.20:25789', user='everton.kopec', password='Nova@123', database='VSCDB')
-            conn_nova = pd.connect(self.url_nova)
-            conn_nova_proc = self.url_nova_proc
-            return conn_vsc, conn_nova, conn_nova_proc
-        except Exception:
-            print('Error', Exception)
+        conn_vsc = pd.connect(self.url_vsc)
+        conn_nova = pd.connect(self.url_nova)
+        conn_nova_proc = self.url_nova_proc
+        return conn_vsc, conn_nova, conn_nova_proc
     
 
     def execOperation(self, exec, ins, *values):
@@ -62,7 +57,7 @@ class PMPG():
             return cur_vsc.fetchall()
         elif ins == 1:
             for data in values:
-                print('data: ', len(data))
+                logging.debug('data: ', len(data))
                 cur_nova.executemany(str(exec), data)
         elif ins == 2:
             cur_nova.execute(exec)
@@ -98,7 +93,7 @@ class PMPG():
         # tirando a necessidade de inserir manualmente a quantidade
         insert = "REPLACE INTO {} VALUES ({})".format(tables, ','.join(['?' for column in range(num_columns)]))
         self.execOperation(insert, 1, ins)
-        print("The values has been inserted on Table: %s!" % table)
+        logging.debug("The values has been inserted on Table: %s!" % table)
     
     #Método Temporário
     # Insert Groups
@@ -106,7 +101,7 @@ class PMPG():
         listGroups = list(groups)
 
         for i in listGroups:
-            print("\n Creating Table --> %s " % i)
+            logging.debug("\n Creating Table --> %s " % i)
             view = self.sql.insertGroupsProc(month, i)
             proc = view[0][0]
             mnt = view[0][1]
@@ -115,7 +110,7 @@ class PMPG():
             self.listGroupsCreated.append(i)
             # print("\n The Table %s has been created \n\n" % i)
 
-        return print(" The Tables %s have been inserted \n " % self.listGroupsCreated)
+        return logging.debug(" The Tables %s have been inserted \n " % self.listGroupsCreated)
 
     # Import Data
     # From: VSC Database
@@ -128,7 +123,7 @@ class PMPG():
         for i in results:
             data.append(i)
         self.putData(data, getData[2])
-        return print("Import Data executed successfully!")
+        return logging.debug("Import Data executed successfully!")
 
 
     # time sum up and cost - Used for exportExcel

@@ -32,6 +32,7 @@ import json
 import dbConfig as cfg
 import sys
 import time
+import logging
 
 # Init App
 app = Flask(__name__)
@@ -65,6 +66,7 @@ app.register_blueprint(bp_fat)
 app.register_blueprint(bp_lg)
 app.register_blueprint(bp_am)
 app.register_blueprint(bp_xls)
+logging.basicConfig(filename='main.proc.log',level=logging.DEBUG)
 
 class main():
     def __init__(self):
@@ -86,11 +88,11 @@ class main():
 
         start_time = time.time()
         # print(srcUtils('pdf').get('src_utils'))
-        print(" Started: %s --- Period: %s" % (datetime.now(), month))
+        logging.debug(" Started: %s --- Period: %s" % (datetime.now(), month))
         
         # Import Data from VSC to NF
         self.request.importVSCtoNF(month)
-        print(" --- %s seconds --- " % (time.time() - start_time))
+        logging.debug(" --- %s seconds --- " % (time.time() - start_time))
 
         for index in self.request.groups:
             
@@ -111,12 +113,12 @@ class main():
                 if len(df) == 0:
                    continue
                 else:
-                    print(" Qty Rows: ", len(df), "Group: %s Grouping: %s " % (index, value))
+                    logging.debug(" Qty Rows: ", len(df), "Group: %s Grouping: %s " % (index, value))
                     # Export Views to Excel
                     self.request.writeExcel(df, value, index, file_to_write)
-                    print(" --- Group %s %s seconds --- " % (value, (time.time() - temp)))
+                    logging.debug(" --- Group %s %s seconds --- " % (value, (time.time() - temp)))
 
-        print(" --- %s seconds --- " % (time.time()- start_time))
+        logging.debug(" --- %s seconds --- " % (time.time()- start_time))
         self.zipTotal(month,'XLSX')
         self.total(month)
         self.summarizedReport(month)
@@ -131,7 +133,7 @@ class main():
         else:
             utils.zipFilesInDir(base_root, archiveZip, lambda name : 'pdf' in name)
 
-        print('All files %s zipped successfully!' % ( type_file )) 
+        logging.debug('All files %s zipped successfully!' % ( type_file )) 
         
         # calling function to get all file paths in the directory 
         # file_paths = utils.get_all_file_paths(base_root)
@@ -155,7 +157,7 @@ class main():
     def total(self, month):
         for index in self.gp:
             for value in self.gp[index]:
-                print("\n Grupo: %s " % value)
+                logging.debug("\n Grupo: %s " % value)
                 self.adm.saveTotal(value, month)
 
     
@@ -201,6 +203,7 @@ class App(Resource):
 
     def get(self, month):
         self.pmpg.mainDef(month)
+        logging.debug('Executado Mes %s' % (month))
         return {'Executado Mes': month}, 200
 
 api.add_resource(App, '/pmpg/<string:month>')
