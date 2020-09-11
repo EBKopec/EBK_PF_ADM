@@ -17,6 +17,7 @@ from model.faturamentoModel import bp_fat, configure
 from model.login.loginModel import bp_lg, configure
 from model.anoMesModel import bp_am, configure
 from model.excelModel import bp_xls,configure,fl_excel
+from model.localSetorModel import bp_lcl, configure
 from schema.Schema import configure as config_ma
 from zipfile import ZipFile
 import shutil
@@ -66,6 +67,7 @@ app.register_blueprint(bp_fat)
 app.register_blueprint(bp_lg)
 app.register_blueprint(bp_am)
 app.register_blueprint(bp_xls)
+app.register_blueprint(bp_lcl)
 logging.basicConfig(filename='main.proc.log',level=logging.DEBUG)
 
 class main():
@@ -208,7 +210,7 @@ class App(Resource):
 
 api.add_resource(App, '/pmpg/<string:month>')
 if __name__ == '__main__':
-    app.run(debug=True, host='127.0.0.1', port=5000)
+    app.run(debug=True, host='localhost', port=5000)
     # http_server = WSGIServer(('', 5000), app)
     # http_server.serve_forever()
 

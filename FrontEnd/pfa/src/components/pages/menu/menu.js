@@ -75,21 +75,31 @@ export default class MainMenu extends Component {
           </Dropdown>
 
           {/* Menu Backup Faturamento */}
-          <Dropdown item text='Backup Faturamento'>
+          <Dropdown item text='Manutenção'>
             <Dropdown.Menu>
-              {/* <Dropdown.Item
-                icon='save'
-                text='Realizar Backup'
-                name='backup'
-                as={Link} to='/app/backup'
-                active={activeItem === 'backup'}
+
+            <Dropdown.Item
+                icon='teletype'
+                text='Manter Unidades'
+                name='typeReg'
+                as={Link} to='/app/unidade'
+                active={activeItem === 'typeReg'}
                 onClick={this.handleItemClick}>
-              </Dropdown.Item> */}
+              </Dropdown.Item>
+              
+            <Dropdown.Item
+                icon='teletype'
+                text='Manter Tipo de Ligações'
+                name='typeReg'
+                as={Link} to='/app/tipoLigacoes'
+                active={activeItem === 'typeReg'}
+                onClick={this.handleItemClick}>
+              </Dropdown.Item>
 
               <Dropdown.Item
                 icon='save'
                 name='checkBilling'
-                text='Consultar Backups'
+                text='Backups de Faturamento'
                 as={Link} to='/app/backups'
                 active={activeItem === 'checkBilling'}
                 onClick={this.handleItemClick}>
@@ -193,19 +203,12 @@ export default class MainMenu extends Component {
           </Dropdown>
 
           {/* Menu Tipo de Ligações */}
-          <Dropdown item text='Manter Tipo de Ligações'>
+          {/* <Dropdown item text='Manter Tipo de Ligações'>
             <Dropdown.Menu>
 
-              <Dropdown.Item
-                icon='teletype'
-                text='Manter'
-                name='typeReg'
-                as={Link} to='/app/tipoLigacoes'
-                active={activeItem === 'typeReg'}
-                onClick={this.handleItemClick}>
-              </Dropdown.Item>
+             
 
-              {/* <Dropdown.Item
+              <Dropdown.Item
                 icon='teletype'
                 text='Listar'
                 name='type'
@@ -221,9 +224,9 @@ export default class MainMenu extends Component {
                 as={Link} to='/app/removerTipoLigacoes'
                 active={activeItem === 'typeDel'}
                 onClick={this.handleItemClick}>
-              </Dropdown.Item> */}
+              </Dropdown.Item> 
             </Dropdown.Menu>
-          </Dropdown>
+          </Dropdown> */}
 
           {/* Menu Tarifas */}
           <Dropdown item text='Manter Tarifas'>

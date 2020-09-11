@@ -31,6 +31,7 @@ class KeepExts extends Component {
             groups: null,
             group: null,
             groupSelected: null,
+            localSelected: null,
             info: [],
             data: null,
         };
@@ -39,19 +40,21 @@ class KeepExts extends Component {
         // console.log("Data", this.state.data);
         this.history();
         this.pendentGroup();
+        this.local();
     }
 
     handleSubmit = async (e) => {
         e.preventDefault();
-        const { linha, groupSelected, tipo_linha, data_envio_nova, data_alteracao, status} = this.state;
+        const { linha, groupSelected, localSelected, tipo_linha, data_envio_nova, data_alteracao, status} = this.state;
         // console.log(`Validacao ${linha}, ${user_group_id.value}, ${tipo_linha}, ${data_envio_nova}, ${status}`)
-        if ( !linha || !groupSelected || !tipo_linha || !data_envio_nova || !data_alteracao || !status){
+        if ( !linha || !groupSelected || !tipo_linha || !data_envio_nova || !data_alteracao || !status || !localSelected){
             alert("Preencha todos os dados!");
         } else {
             let user_group_id = groupSelected.value;
+            let id_local_setor = localSelected.value;
             try {
                 // const post = 
-                await api.post("/extensions/regext", {linha, user_group_id, tipo_linha, data_envio_nova, data_alteracao, status});
+                await api.post("/extensions/regext", {linha, user_group_id, tipo_linha, data_envio_nova, data_alteracao, status, id_local_setor});
                 // const { data } = post;
                 alert('Ramal Cadastrado com Sucesso!');
                 this.props.history.push("/app/ramais");
@@ -79,15 +82,30 @@ class KeepExts extends Component {
         console.log(`Group Selected: `, groupSelected );
     };
 
+    localChange = localSelected => {
+        this.setState({localSelected});
+        console.log(`Local Selected: `, localSelected );
+    }
+
     pendentGroup = () => {
         let groups = [];
         groups = Groups.groups.map((dt) => { return { value: dt.value, label: dt.label } })
         this.setState({ groups: groups })
     }
 
+    local = async (e) => {
+        let locals = [];
+
+        const local = await api.get(`/localsetor`);
+        // console.log(local);
+        locals = local.data.map((id_local) => { return { value: id_local.id_local_setor, label: id_local.Local_Setor } });
+        // console.log("Years", ano);
+        this.setState({ locals: locals });
+    }
+
 
     render(){
-        const { groups, groupSelected, info } = this.state;
+        const { groups, groupSelected, locals, localSelected, info } = this.state;
         // console.log("Info", info, groupSelected);
         
         return (
@@ -115,6 +133,17 @@ class KeepExts extends Component {
                                 options={groups}
                                 maxMenuHeight={150}
                                 placeholder="Selecione o Grupo"
+                                isSearchable 
+                                required
+                                />
+                        <a>Unidade</a>
+                        <Select
+                                className="selected"
+                                value={localSelected}
+                                onChange={this.localChange}
+                                options={locals}
+                                maxMenuHeight={150}
+                                placeholder="Selecione a Unidade"
                                 isSearchable 
                                 required
                                 />

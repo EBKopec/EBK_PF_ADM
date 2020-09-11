@@ -12,7 +12,9 @@ import ConsumoTotal from "./components/pages/body/mainFunction/showConsumeTotal"
 
 // import Salvar from "./components/pages/body/backup/backupBilling";
 // import ASalvar from "./components/pages/body/backup/toBackupBilling";
-import Backups from "./components/pages/body/backup/backupDone";
+import ManterUnidade from "./components/pages/body/keepUnity/keepUnity";
+import ManterTipoLigacoes from "./components/pages/body/keepCallType/keepCallTypes";
+import BackupsFaturamento from "./components/pages/body/backup/backupDone";
 
 import RegistrarRamais from "./components/pages/body/keepExt/keepExts";
 import ManterRamais from "./components/pages/body/keepExt/registerExts";
@@ -25,7 +27,7 @@ import ListarRamaisMes from "./components/pages/body/searchExt/searchExtsMonth";
 import ListarRamaisQtde from "./components/pages/body/searchExt/searchExtsQty";
 
 
-import ManterTipoLigacoes from "./components/pages/body/keepCallType/keepCallTypes";
+
 // import ShowTipoLigacoes from "./components/pages/body/keepCallType/showCallTypes";
 // import RemoverTipoLigacoes from "./components/pages/body/keepCallType/deleteCallTypes";
 
@@ -60,7 +62,10 @@ const Routes = () =>(
             
             {/* <PrivateRoute exact path="/app/toBackup" component={ASalvar}/>
             <PrivateRoute exact path="/app/backup" component={Salvar} /> */}
-            <PrivateRoute exact path="/app/backups" component={Backups}/>
+            
+            <PrivateRoute exact path="/app/unidade" component={ManterUnidade}/>
+            <PrivateRoute exact path="/app/tipoLigacoes" component={ManterTipoLigacoes}/>
+            <PrivateRoute exact path="/app/backups" component={BackupsFaturamento}/>
             
             <PrivateRoute exact path="/app/ramais" component={ManterRamais}/>
             <PrivateRoute exact path="/app/manterRamais" component={RegistrarRamais}/>
@@ -72,7 +77,6 @@ const Routes = () =>(
             <PrivateRoute exact path="/app/listarRamaisMes" component={ListarRamaisMes}/>
             <PrivateRoute exact path="/app/listarRamaisQtde" component={ListarRamaisQtde}/>
 
-            <PrivateRoute exact path="/app/tipoLigacoes" component={ManterTipoLigacoes}/>
             {/* <PrivateRoute exact path="/app/showTipoLigacoes" component={ShowTipoLigacoes}/>
             <PrivateRoute exact path="/app/removerTipoLigacoes" component={RemoverTipoLigacoes}/> */}
 

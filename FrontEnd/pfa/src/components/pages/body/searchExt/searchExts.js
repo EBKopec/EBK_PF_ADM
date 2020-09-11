@@ -5,18 +5,19 @@ import Table from '../../../utils/table/table';
 import api from "../../../services/api";
 import { checkArray } from '../../../utils/bytes';
 
-const columns = "linha.Grupo.user_group_id.tipo_linha.status.data_envio_nova.data_validacao_cliente.PROPORCIONAL.data_alteracao.data_cancelamento";
+const columns = "linha.Grupo.tipo_linha.status.data_envio_nova.data_validacao_cliente.PROPORCIONAL.data_alteracao.data_cancelamento.descricao_local.descricao_setor";
 const heads = [ 
     "LINHA",
     "GRUPO",
-    "USER CODE",
     "TIPO LINHA",
     "STATUS",
     "DATA DE CADASTRO",
     "DATA ATIVAÇÃO",
-    "VALOR PROPORCIONAL",
+    "VALOR PROP.",
     "DATA ALTERAÇÃO",
-    "DATA CANCELAMENTO"
+    "DATA CANCELAMENTO",
+    "LOCAL",
+    "SETOR"
 ]
 
 
@@ -43,7 +44,7 @@ export default class SearchExts extends Component {
         // console.log('ramal', ext, 'Page', page);
         const response = await api.get(`/extensions/${ext}/${page}`);
         const { docs, ...contentInfo } = response.data;
-        // console.log('Docs', docs);
+        console.log('Docs', docs);
         this.setState({ content: docs, contentInfo, pages: contentInfo.Pages.Pages, page });
         // console.log('ContentInfo', contentInfo);
     }
@@ -116,6 +117,7 @@ export default class SearchExts extends Component {
         }
         const response = await api.get(`/extensions/${extSelected.value}/${page}`);
         const { docs, ...contentInfo } = response.data;
+       
         this.setState({content: docs, pages: contentInfo.Pages.Pages, page, extSelected: null})
 
     }

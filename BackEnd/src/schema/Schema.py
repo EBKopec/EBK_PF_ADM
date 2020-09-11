@@ -6,9 +6,9 @@ ma = Marshmallow()
 def configure(app):
     ma.init_app(app)
 
-class controle_agrupamento_bkpSchema(ma.Schema):
+class controle_agrupamentoSchema(ma.Schema):
     class Meta:
-        fields = ('linha', 'user_group_id', 'tipo_linha', 'data_envio_nova', 'data_validacao_cliente', 'data_cancelamento', 'status', 'data_alteracao','Grupo', 'Quantidade', 'PROPORCIONAL','RAMAIS_ATIVOS','ATIVADOS_MES','EM_ATIVACAO','DESCONECTADOS','DATA')
+        fields = ('linha', 'user_group_id', 'tipo_linha', 'data_envio_nova', 'data_validacao_cliente', 'data_cancelamento', 'status', 'data_alteracao','Grupo', 'Quantidade', 'PROPORCIONAL','RAMAIS_ATIVOS','ATIVADOS_MES','EM_ATIVACAO','DESCONECTADOS','DATA', 'id_local_setor','descricao_local','descricao_setor')
 
 class UsersSchema(ma.Schema):
     class Meta:
@@ -60,10 +60,13 @@ class AnoMesSchema(ma.Schema):
     class Meta:
         fields = ('id_ano', 'id_mes', 'ano', 'mes')
 
+class LocalSetorSchema(ma.Schema):
+    class Meta:
+        fields = ('id_local', 'descricao_local', 'id_setor', 'descricao_setor', 'id_local_setor', 'Local_Setor')
 
 # Init Schema
-ext_schema = controle_agrupamento_bkpSchema()
-exts_schema = controle_agrupamento_bkpSchema(many = True)
+ext_schema = controle_agrupamentoSchema()
+exts_schema = controle_agrupamentoSchema(many = True)
 users_schema = UsersSchema(many = True)
 
 tarifa_Schema = TarifaSchema()
@@ -88,3 +91,6 @@ vws_Schema = VwsSchema(many = True)
 app_users_Schema = ApplicationUsersSchema()
 
 anoMes_Schema = AnoMesSchema(many = True)
+
+localSetor_Schema = LocalSetorSchema()
+localSetores_Schema = LocalSetorSchema(many = True)

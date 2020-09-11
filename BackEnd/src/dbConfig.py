@@ -1,6 +1,6 @@
-HOST = "10.85.24.17"
-USER = "pfa"
-PASSWORD = "NovaFibr@2020"
+HOST = "localhost"
+USER = "root"
+PASSWORD = "Bigodao@00"
 DB = "NovaFibra"
 dialect = "mysql"
 

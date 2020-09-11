@@ -2,6 +2,7 @@ from flask_sqlalchemy import SQLAlchemy, BaseQuery
 from flask import Blueprint, current_app, request, jsonify
 from flask_restful import Resource, Api
 from schema import Schema
+from model import localSetorModel
 from utils import utils
 import datetime
 
@@ -14,7 +15,11 @@ def configure(app):
     app.db = db
 
 
-class controle_agrupamento_bkp(db.Model):
+LOCAL = localSetorModel.local
+SETOR = localSetorModel.setor
+PLACE = localSetorModel.local_setor
+
+class controle_agrupamento(db.Model):
     linha = db.Column(db.String(255), primary_key=True)
     user_group_id = db.Column(db.Integer, primary_key=True)
     tipo_linha = db.Column(db.String(255))
@@ -23,8 +28,9 @@ class controle_agrupamento_bkp(db.Model):
     data_cancelamento = db.Column(db.Date)
     status = db.Column(db.String(10))
     data_alteracao = db.Column(db.Date, server_default=db.func.sysdate())
+    id_local_setor = db.Column(db.Integer)
 
-    def __init__(self, linha, user_group_id, tipo_linha, data_envio_nova, data_validacao_cliente, data_cancelamento, status, data_alteracao):
+    def __init__(self, linha, user_group_id, tipo_linha, data_envio_nova, data_validacao_cliente, data_cancelamento, status, data_alteracao, id_local_setor):
         self.linha = linha
         self.user_group_id = user_group_id
         self.tipo_linha = tipo_linha
@@ -33,6 +39,7 @@ class controle_agrupamento_bkp(db.Model):
         self.data_cancelamento = data_cancelamento
         self.status = status
         self.data_alteracao = data_alteracao
+        self.id_local_setor = id_local_setor
 
 class Users(db.Model):
     USER_ID = db.Column(db.Integer, primary_key=True)
@@ -80,30 +87,40 @@ class Tarifa(db.Model):
 # Show ext pages
 @bp_ca.route('/extensions/<int:ext>/<int:page_num>', methods=['GET'])
 def exts(ext,page_num=1):
+    print('Aqui Necessário')
     per_page = 20
     query = db.session.query( Users.User_Group.label('Grupo')
-                            , controle_agrupamento_bkp.linha
-                            , controle_agrupamento_bkp.user_group_id
-                            , controle_agrupamento_bkp.tipo_linha
-                            , controle_agrupamento_bkp.data_envio_nova
-                            , controle_agrupamento_bkp.data_validacao_cliente
-                            , controle_agrupamento_bkp.data_cancelamento
-                            , controle_agrupamento_bkp.status
-                            , controle_agrupamento_bkp.data_alteracao
-                            , db.func.CalculoRamal( controle_agrupamento_bkp.data_validacao_cliente
-                                                  , controle_agrupamento_bkp.data_cancelamento
+                            , controle_agrupamento.linha
+                            , controle_agrupamento.user_group_id
+                            , controle_agrupamento.tipo_linha
+                            , controle_agrupamento.data_envio_nova
+                            , controle_agrupamento.data_validacao_cliente
+                            , controle_agrupamento.data_cancelamento
+                            , controle_agrupamento.status
+                            , LOCAL.descricao_local
+                            , SETOR.descricao_setor
+                            , controle_agrupamento.data_alteracao
+                            , db.func.CalculoRamal( controle_agrupamento.data_validacao_cliente
+                                                  , controle_agrupamento.data_cancelamento
                                                   , Tarifa.VALOR_RAMAL
-                                                  , controle_agrupamento_bkp.status).label('PROPORCIONAL'))
+                                                  , controle_agrupamento.status).label('PROPORCIONAL'))
     if (ext == 0):
-        extensions = query.join(Users, Users.USER_ID==controle_agrupamento_bkp.user_group_id)\
+        extensions = query.join(Users, Users.USER_ID==controle_agrupamento.user_group_id)\
                           .join(Tarifa, Tarifa.USER_ID == Users.USER_ID)\
-                          .group_by(controle_agrupamento_bkp.linha)
+                          .join(PLACE, PLACE.id_local_setor == controle_agrupamento.id_local_setor)\
+                          .join(LOCAL, LOCAL.id_local == PLACE.id_local)\
+                          .join(SETOR, SETOR.id_setor == PLACE.id_setor)\
+                          .group_by(controle_agrupamento.linha)
     else:
-        extensions = query.join(Users, Users.USER_ID==controle_agrupamento_bkp.user_group_id)\
+        extensions = query.join(Users, Users.USER_ID==controle_agrupamento.user_group_id)\
                           .join(Tarifa, Tarifa.USER_ID == Users.USER_ID)\
-                          .filter(controle_agrupamento_bkp.linha==ext)\
-                          .group_by(controle_agrupamento_bkp.linha)
+                          .join(PLACE, PLACE.id_local_setor == controle_agrupamento.id_local_setor)\
+                          .join(LOCAL, LOCAL.id_local == PLACE.id_local)\
+                          .join(SETOR, SETOR.id_setor == SETOR.id_setor)\
+                          .filter(controle_agrupamento.linha==ext)\
+                          .group_by(controle_agrupamento.linha)
     
+    print(extensions)
     pg = extensions.paginate(page=page_num,per_page=per_page).items
     # print(dir(extensions.paginate(page=page_num)))
     total = []
@@ -126,54 +143,28 @@ def extsKeep(sts):
     #     this_status = sts
     
     # print(sts);
+    print('aqui');
     query = db.session.query( Users.User_Group.label('Grupo')
-                            , controle_agrupamento_bkp.linha
-                            , controle_agrupamento_bkp.user_group_id
-                            , controle_agrupamento_bkp.tipo_linha
-                            , controle_agrupamento_bkp.data_envio_nova
-                            , controle_agrupamento_bkp.data_validacao_cliente
-                            , controle_agrupamento_bkp.data_cancelamento
-                            , controle_agrupamento_bkp.status
-                            , controle_agrupamento_bkp.data_alteracao
-                            , db.func.CalculoRamal( controle_agrupamento_bkp.data_validacao_cliente
-                                                  , controle_agrupamento_bkp.data_cancelamento
+                            , controle_agrupamento.linha
+                            , controle_agrupamento.user_group_id
+                            , controle_agrupamento.tipo_linha
+                            , controle_agrupamento.data_envio_nova
+                            , controle_agrupamento.data_validacao_cliente
+                            , controle_agrupamento.data_cancelamento
+                            , controle_agrupamento.status
+                            , controle_agrupamento.data_alteracao
+                            , db.func.CalculoRamal( controle_agrupamento.data_validacao_cliente
+                                                  , controle_agrupamento.data_cancelamento
                                                   , Tarifa.VALOR_RAMAL
-                                                  , controle_agrupamento_bkp.status).label('PROPORCIONAL'))
-    extensions = query.join(Users, Users.USER_ID==controle_agrupamento_bkp.user_group_id)\
+                                                  , controle_agrupamento.status).label('PROPORCIONAL'))
+    extensions = query.join(Users, Users.USER_ID==controle_agrupamento.user_group_id)\
                       .join(Tarifa, Tarifa.USER_ID == Users.USER_ID)\
-                      .filter(controle_agrupamento_bkp.status.in_(sts))\
-                      .group_by(controle_agrupamento_bkp.linha).all()
+                      .filter(controle_agrupamento.status.in_(sts))\
+                      .group_by(controle_agrupamento.linha).all()
     result = Schema.exts_schema.dump(extensions)
     db.session.close()
     return jsonify(result)
 
-
-
-
-
-# # Show ext properties
-# @bp_ca.route('/extensions/ext/<string:ext>', methods=['GET'])
-# def ext(ext):
-#     query = db.session.query( Users.User_Group.label('Grupo')
-#                             , controle_agrupamento_bkp.linha
-#                             , controle_agrupamento_bkp.user_group_id
-#                             , controle_agrupamento_bkp.tipo_linha
-#                             , controle_agrupamento_bkp.data_envio_nova
-#                             , controle_agrupamento_bkp.data_validacao_cliente
-#                             , controle_agrupamento_bkp.data_cancelamento
-#                             , controle_agrupamento_bkp.status
-#                             , controle_agrupamento_bkp.data_alteracao
-#                             , db.func.CalculoRamal( controle_agrupamento_bkp.data_validacao_cliente
-#                                                   , controle_agrupamento_bkp.data_cancelamento
-#                                                   , Tarifa.VALOR_RAMAL
-#                                                   , controle_agrupamento_bkp.status).label('PROPORCIONAL'))
-#     extensions = query.join(Users, Users.USER_ID==controle_agrupamento_bkp.user_group_id)\
-#                       .join(Tarifa, Tarifa.USER_ID == Users.USER_ID)\
-#                       .filter(controle_agrupamento_bkp.linha==ext)\
-#                       .first_or_404('Ramal não existente ainda!')
-#     result = Schema.ext_schema.dump(extensions)
-#     db.session.close()
-#     return jsonify(result)
 
 
 # Show exts qty per group
@@ -183,26 +174,26 @@ def qty_ext(monthId):
     month_id = utils.monthId(monthId)
     # print("Month_id",month_id, "----", datetime.date.today(), "----", datetime.date.today().year, datetime.date.today().month, db.func.date_part('YEAR', datetime.date.today()))
     query = db.session.query(Users.User_Group.label('Grupo')\
-                            , db.func.cast(db.func.sum(db.case([(db.and_( controle_agrupamento_bkp.status == "Y"
-                                                                        , db.func.date_format(controle_agrupamento_bkp.data_alteracao,'%Y%m') <= month_id ), 1)], else_=0)), db.Integer).label('RAMAIS_ATIVOS')
-                            , db.func.cast(db.func.sum(db.case([(db.and_( controle_agrupamento_bkp.status == "Y"
-                                                                        , db.func.date_format(controle_agrupamento_bkp.data_validacao_cliente,'%Y%m') == month_id ), 1)], else_=0)), db.Integer).label('ATIVADOS_MES')
-                            , db.func.cast(db.func.sum(db.case([(db.and_( controle_agrupamento_bkp.status == "P"
-                                                                        , db.func.date_format(controle_agrupamento_bkp.data_envio_nova,'%Y%m') <= month_id ), 1)], else_=0)), db.Integer).label('EM_ATIVACAO')
-                            , db.func.cast(db.func.sum(db.case([(db.and_( controle_agrupamento_bkp.status == "N"
-                                                                        , db.func.date_format(controle_agrupamento_bkp.data_cancelamento,'%Y%m') == month_id ), 1)], else_=0)), db.Integer).label('DESCONECTADOS')
+                            , db.func.cast(db.func.sum(db.case([(db.and_( controle_agrupamento.status == "Y"
+                                                                        , db.func.date_format(controle_agrupamento.data_alteracao,'%Y%m') <= month_id ), 1)], else_=0)), db.Integer).label('RAMAIS_ATIVOS')
+                            , db.func.cast(db.func.sum(db.case([(db.and_( controle_agrupamento.status == "Y"
+                                                                        , db.func.date_format(controle_agrupamento.data_validacao_cliente,'%Y%m') == month_id ), 1)], else_=0)), db.Integer).label('ATIVADOS_MES')
+                            , db.func.cast(db.func.sum(db.case([(db.and_( controle_agrupamento.status == "P"
+                                                                        , db.func.date_format(controle_agrupamento.data_envio_nova,'%Y%m') <= month_id ), 1)], else_=0)), db.Integer).label('EM_ATIVACAO')
+                            , db.func.cast(db.func.sum(db.case([(db.and_( controle_agrupamento.status == "N"
+                                                                        , db.func.date_format(controle_agrupamento.data_cancelamento,'%Y%m') == month_id ), 1)], else_=0)), db.Integer).label('DESCONECTADOS')
                             )
     
     if month_id == utils.monthId(str(datetime.date.today().year)+str(datetime.date.today().month)):
         print("Entrou Aqui IF", month_id)
-        extensions = query.join(Users, Users.USER_ID==controle_agrupamento_bkp.user_group_id)\
-        .filter(db.func.date_format(controle_agrupamento_bkp.data_envio_nova,'%Y%m')<=\
+        extensions = query.join(Users, Users.USER_ID==controle_agrupamento.user_group_id)\
+        .filter(db.func.date_format(controle_agrupamento.data_envio_nova,'%Y%m')<=\
                                 db.func.date_format(datetime.date.today(),'%Y%m'))\
         .group_by(Users.User_Group)
     else:
         print("Else Entrou Aqui", utils.monthId(str(datetime.date.today().year)+str(datetime.date.today().month)))
-        extensions = query.join(Users, Users.USER_ID==controle_agrupamento_bkp.user_group_id)\
-        .filter(db.func.date_format(controle_agrupamento_bkp.data_envio_nova,'%Y%m') <= month_id)\
+        extensions = query.join(Users, Users.USER_ID==controle_agrupamento.user_group_id)\
+        .filter(db.func.date_format(controle_agrupamento.data_envio_nova,'%Y%m') <= month_id)\
         .group_by(Users.User_Group)
     print(extensions)
     result = Schema.exts_schema.dump(extensions)
@@ -213,14 +204,8 @@ def qty_ext(monthId):
 # Activate and Deactivate Extensions
 @bp_ca.route('/extensions/updtext/<string:ext>', methods=['POST'])
 def updtExt(ext):
-    query = controle_agrupamento_bkp.query.filter(controle_agrupamento_bkp.linha==ext)
-    # status = request.json["status"]
-    # data_validacao_cliente = request.json["data_validacao_cliente"]
-
-    # query.status = status
-    # query.data_validacao_cliente = data_validacao_cliente
+    query = controle_agrupamento.query.filter(controle_agrupamento.linha==ext)
     query.update(request.json)
-    # db.session.add(query)
     db.session.commit()
     query.session.close()
     result = Schema.exts_schema.dump(query)
@@ -230,7 +215,7 @@ def updtExt(ext):
 # Delete Extensions
 @bp_ca.route('/extensions/delext/<string:ext>', methods=['DELETE'])
 def delExt(ext):
-    query = controle_agrupamento_bkp.query.filter(controle_agrupamento_bkp.linha==ext)
+    query = controle_agrupamento.query.filter(controle_agrupamento.linha==ext)
     if query.count() > 0:
         query.delete()
         result = {'Deleted':ext}
@@ -244,23 +229,25 @@ def delExt(ext):
 @bp_ca.route('/extensions/regext', methods=['POST'])
 def regExt():
 
-    query = controle_agrupamento_bkp( controle_agrupamento_bkp.linha
-                                    , controle_agrupamento_bkp.user_group_id
-                                    , controle_agrupamento_bkp.tipo_linha
-                                    , controle_agrupamento_bkp.data_envio_nova
-                                    , controle_agrupamento_bkp.data_validacao_cliente
-                                    , controle_agrupamento_bkp.data_cancelamento
-                                    , controle_agrupamento_bkp.status
-                                    , controle_agrupamento_bkp.data_alteracao)
+    query = controle_agrupamento( controle_agrupamento.linha
+                                , controle_agrupamento.user_group_id
+                                , controle_agrupamento.tipo_linha
+                                , controle_agrupamento.data_envio_nova
+                                , controle_agrupamento.data_validacao_cliente
+                                , controle_agrupamento.data_cancelamento
+                                , controle_agrupamento.status
+                                , controle_agrupamento.data_alteracao
+                                , controle_agrupamento.id_local_setor)
 
     linha = request.json["linha"]
     user_group_id = request.json["user_group_id"]
     tipo_linha = request.json["tipo_linha"]
     data_envio_nova = request.json["data_envio_nova"]
-    data_validacao_cliente = controle_agrupamento_bkp.data_validacao_cliente
-    data_cancelamento = controle_agrupamento_bkp.data_cancelamento
+    data_validacao_cliente = controle_agrupamento.data_validacao_cliente
+    data_cancelamento = controle_agrupamento.data_cancelamento
     status = request.json["status"]
     data_alteracao = request.json["data_alteracao"]
+    id_local_setor = request.json["id_local_setor"]
 
     query.linha = linha
     query.user_group_id = user_group_id
@@ -270,6 +257,7 @@ def regExt():
     # query.data_cancelamento = data_cancelamento
     query.status = status
     query.data_alteracao = data_alteracao
+    query.id_local_setor = id_local_setor
 
     db.session.add(query)
     db.session.commit()
@@ -284,25 +272,25 @@ def regExt():
 def getExtDesc(month_id,page_num=1):
     per_page = 10;
     query = db.session.query(Users.User_Group.label('Grupo')
-                            , controle_agrupamento_bkp.linha
-                            , db.case([(db.and_( controle_agrupamento_bkp.status == "Y"
-                                                    , db.func.cast(db.func.concat( db.func.year( controle_agrupamento_bkp.data_validacao_cliente)
-                                                                    , db.func.month(controle_agrupamento_bkp.data_validacao_cliente)), db.Integer) == db.func.cast(month_id, db.Integer) ), controle_agrupamento_bkp.data_validacao_cliente)], else_='').label('ATIVADOS_MES')
-                            , db.case([(db.and_( controle_agrupamento_bkp.status == "P"
-                                                    , db.func.cast(db.func.concat( db.func.year( controle_agrupamento_bkp.data_envio_nova)
-                                                                    , db.func.month(controle_agrupamento_bkp.data_envio_nova)), db.Integer) == db.func.cast(month_id, db.Integer) ), controle_agrupamento_bkp.data_envio_nova)], else_='').label('EM_ATIVACAO')
-                            , db.case([(db.and_( controle_agrupamento_bkp.status == "N"
-                                                    , db.func.cast(db.func.concat( db.func.year( controle_agrupamento_bkp.data_cancelamento)
-                                                                    , db.func.month(controle_agrupamento_bkp.data_cancelamento)), db.Integer) == db.func.cast(month_id, db.Integer) ), controle_agrupamento_bkp.data_cancelamento)], else_='').label('DESCONECTADOS')
+                            , controle_agrupamento.linha
+                            , db.case([(db.and_( controle_agrupamento.status == "Y"
+                                                    , db.func.cast(db.func.concat( db.func.year( controle_agrupamento.data_validacao_cliente)
+                                                                    , db.func.month(controle_agrupamento.data_validacao_cliente)), db.Integer) == db.func.cast(month_id, db.Integer) ), controle_agrupamento.data_validacao_cliente)], else_='').label('ATIVADOS_MES')
+                            , db.case([(db.and_( controle_agrupamento.status == "P"
+                                                    , db.func.cast(db.func.concat( db.func.year( controle_agrupamento.data_envio_nova)
+                                                                    , db.func.month(controle_agrupamento.data_envio_nova)), db.Integer) == db.func.cast(month_id, db.Integer) ), controle_agrupamento.data_envio_nova)], else_='').label('EM_ATIVACAO')
+                            , db.case([(db.and_( controle_agrupamento.status == "N"
+                                                    , db.func.cast(db.func.concat( db.func.year( controle_agrupamento.data_cancelamento)
+                                                                    , db.func.month(controle_agrupamento.data_cancelamento)), db.Integer) == db.func.cast(month_id, db.Integer) ), controle_agrupamento.data_cancelamento)], else_='').label('DESCONECTADOS')
                             )
     print(query)
-    extensions = query.join(Users, Users.USER_ID==controle_agrupamento_bkp.user_group_id)\
+    extensions = query.join(Users, Users.USER_ID==controle_agrupamento.user_group_id)\
                       .filter(db.func.cast(\
                                   db.func.concat(\
-                                      db.func.year(controle_agrupamento_bkp.data_alteracao),\
-                                          db.func.month(controle_agrupamento_bkp.data_alteracao)), db.Integer)==\
+                                      db.func.year(controle_agrupamento.data_alteracao),\
+                                          db.func.month(controle_agrupamento.data_alteracao)), db.Integer)==\
                                               db.func.cast(month_id, db.Integer))\
-                                                  .group_by(controle_agrupamento_bkp.linha)
+                                                  .group_by(controle_agrupamento.linha)
                                                       
     pg = extensions.paginate(page=page_num,per_page=per_page).items
     # print(dir(extensions.paginate(page=page_num)))
