@@ -117,7 +117,7 @@ class main():
                 else:
                     logging.debug(" Qty Rows: %s Group: %s Grouping: %s " % (len(df), index, value))
                     # Export Views to Excel
-                    self.request.writeExcel(df, value, index, file_to_write)
+                    # self.request.writeExcel(df, value, index, file_to_write)
                     logging.debug(" --- Group %s %s seconds --- " % (value, (time.time() - temp)))
 
         logging.debug(" --- %s seconds --- " % (time.time()- start_time))

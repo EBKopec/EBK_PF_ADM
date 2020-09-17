@@ -44,8 +44,10 @@ class administrationExtensions():
             default = {'TIPO': ['LDN','LOCAL', 'MOVEL'],
                     'Soma_Custo': [0,0,0],
                     'Soma_Duracao':['0','0','0'] }
+            print('Aqui1')
             data = pd.DataFrame(default, columns=['TIPO', 'Soma_Duracao', 'Soma_Custo']).fillna(0).sort_values('TIPO', ascending=True).reset_index(drop=True)
         else:
+            print('Aqui2')
             data.columns = ['TIPO', 'Soma_Duracao', 'Soma_Custo']
         #data.columns = ['TIPO', 'Soma_Duracao', 'Soma_Custo']
         # print('Data', type(data),'\n\n', data)
@@ -69,7 +71,6 @@ class administrationExtensions():
                                          , columns=['RAMAL', 'GRUPO', 'DATA_INSTALACAO', 'DATA_ATIVACAO'
                 , 'DATA_CANCELAMENTO', 'VALOR_RAMAL', 'STATUS', 'PROPORCIONAL'])
         xp = exc.fillna(0)
-
         data['DATA_ATIVACAO_REF'] = pd.to_datetime(data['DATA_ATIVACAO'], errors='coerce').dt.strftime('%Y%m')
         data['PROPORCIONAL'] = data['PROPORCIONAL'].astype('float')
         data['VALOR_RAMAL'] = data['VALOR_RAMAL'].astype('float')
@@ -87,6 +88,7 @@ class administrationExtensions():
         faturar['FRANQUIAS'] = xp['FRANQUIA_VALOR'].sum()
         faturar['EXCEDENTES'] = xp['EXCEDENTE_VALOR'].sum()
         faturar['TOTAL_FATURAR'] = faturar['FATURAR_RAMAIS'] + faturar['FRANQUIAS'] + faturar['EXCEDENTES']
+        print('aqui ldn')
         faturar['LDN'] = xp.query("TIPO == 'LDN'")['FRANQUIA_MIN'][0]
         faturar['LOCAL'] = xp.query("TIPO == 'LOCAL'")['FRANQUIA_MIN'][1]
         faturar['MOVEL'] = xp.query("TIPO == 'MOVEL'")['FRANQUIA_MIN'][2]
