@@ -57,7 +57,7 @@ class PMPG():
             return cur_vsc.fetchall()
         elif ins == 1:
             for data in values:
-                logging.debug('data: ', len(data))
+                logging.debug('data: %s ' % (len(data)))
                 cur_nova.executemany(str(exec), data)
         elif ins == 2:
             cur_nova.execute(exec)

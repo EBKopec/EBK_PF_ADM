@@ -115,7 +115,7 @@ class main():
                 if len(df) == 0:
                    continue
                 else:
-                    logging.debug(" Qty Rows: ", len(df), "Group: %s Grouping: %s " % (index, value))
+                    logging.debug(" Qty Rows: %s Group: %s Grouping: %s " % (len(df), index, value))
                     # Export Views to Excel
                     self.request.writeExcel(df, value, index, file_to_write)
                     logging.debug(" --- Group %s %s seconds --- " % (value, (time.time() - temp)))

@@ -3,6 +3,7 @@ import Menu from "../../menu/menu";
 import Select from 'react-select';
 import Data from "../../../services/api";
 import Currency from 'react-currency-format';
+import { checkArray }  from '../../../utils/checkArray';
 
 // import moment from 'moment';
 
@@ -60,6 +61,12 @@ export default class showConsumeTotal extends Component {
 
         const response = await Data.get(`/pmpg/total/${selectedYear.value}${selectedMonth.value}`);
         const { data } = response;
+        try {
+            checkArray(data);
+        } catch(err){
+            console.log('Erro', err);
+            return alert(`Não há dados processados para o mês de ${selectedMonth.label} de ${selectedYear.value}!`);
+        }
         // console.log("Data", data)
         this.setState({ content: data });
         // console.log(this.state.content);

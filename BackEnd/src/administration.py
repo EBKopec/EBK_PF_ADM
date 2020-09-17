@@ -69,6 +69,7 @@ class administrationExtensions():
                                          , columns=['RAMAL', 'GRUPO', 'DATA_INSTALACAO', 'DATA_ATIVACAO'
                 , 'DATA_CANCELAMENTO', 'VALOR_RAMAL', 'STATUS', 'PROPORCIONAL'])
         xp = exc.fillna(0)
+
         data['DATA_ATIVACAO_REF'] = pd.to_datetime(data['DATA_ATIVACAO'], errors='coerce').dt.strftime('%Y%m')
         data['PROPORCIONAL'] = data['PROPORCIONAL'].astype('float')
         data['VALOR_RAMAL'] = data['VALOR_RAMAL'].astype('float')
