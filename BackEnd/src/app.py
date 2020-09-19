@@ -13,8 +13,8 @@ import locale
 from builtins import FileNotFoundError
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
-
+#logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(filename='/var/log/flask/main.proc.log',level=logging.DEBUG)
 class PMPG():
     def __init__(self):
         #self.url_vsc = 'Driver={SQL Server};server=189.85.23.20,25789;DATABASE=VSCDB;UID=everton.kopec;PWD=Nova@123'
@@ -26,7 +26,7 @@ class PMPG():
         self.sql = sqls()
         self.listGroupsCreated = []
         self.groups = {'PMPG': ['PMPG', 'PMPG_0800', 'SME_ESCOLA', 'SME_CMEI']
-                    , 'FMS': ['SMS_AIH', 'SMS_AIH_0800', 'SMS_PAB', 'SMS_PAB_0800']}
+                    , 'FMS': ['FMS_AIH', 'FMS_AIH_0800', 'FMS_PAB', 'FMS_PAB_0800']}
 
     # Create Connection
     def createConn(self):
@@ -164,8 +164,9 @@ class PMPG():
 
         
         data = data
-        df = pds.DataFrame.from_records(data, columns=['TIPO', 'ORIGEM', 'DATA', 'HORA', 'DESTINO', 'CIDADE_DESTINO',
-                                                       'DURACAO_REAL', 'CUSTO'])
+        df = pds.DataFrame.from_records(data, columns=[ 'TIPO', 'ORIGEM', 'DATA'
+                                                      , 'HORA', 'DESTINO', 'CIDADE_DESTINO'
+                                                      , 'DURACAO_REAL', 'CUSTO'])
         df['ORIGEM'] = pds.to_numeric(df['ORIGEM'])
         df['DESTINO'] = pds.to_numeric(df['DESTINO'])
 

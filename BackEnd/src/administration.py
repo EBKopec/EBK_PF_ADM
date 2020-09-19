@@ -5,10 +5,11 @@ from sqls import sqls
 import locale
 import json
 from utils import utils
+import logging
 pd.options.mode.chained_assignment = None
 locale.setlocale(locale.LC_ALL, '')
 
-
+#logging.basicConfig(filename='/var/log/flask/main.proc.log',level=logging.DEBUG)
 class administrationExtensions():
 
     def __init__(self):
@@ -44,10 +45,8 @@ class administrationExtensions():
             default = {'TIPO': ['LDN','LOCAL', 'MOVEL'],
                     'Soma_Custo': [0,0,0],
                     'Soma_Duracao':['0','0','0'] }
-            print('Aqui1')
             data = pd.DataFrame(default, columns=['TIPO', 'Soma_Duracao', 'Soma_Custo']).fillna(0).sort_values('TIPO', ascending=True).reset_index(drop=True)
         else:
-            print('Aqui2')
             data.columns = ['TIPO', 'Soma_Duracao', 'Soma_Custo']
         #data.columns = ['TIPO', 'Soma_Duracao', 'Soma_Custo']
         # print('Data', type(data),'\n\n', data)
@@ -88,7 +87,6 @@ class administrationExtensions():
         faturar['FRANQUIAS'] = xp['FRANQUIA_VALOR'].sum()
         faturar['EXCEDENTES'] = xp['EXCEDENTE_VALOR'].sum()
         faturar['TOTAL_FATURAR'] = faturar['FATURAR_RAMAIS'] + faturar['FRANQUIAS'] + faturar['EXCEDENTES']
-        print('aqui ldn')
         faturar['LDN'] = xp.query("TIPO == 'LDN'")['FRANQUIA_MIN'][0]
         faturar['LOCAL'] = xp.query("TIPO == 'LOCAL'")['FRANQUIA_MIN'][1]
         faturar['MOVEL'] = xp.query("TIPO == 'MOVEL'")['FRANQUIA_MIN'][2]
@@ -174,7 +172,7 @@ class administrationExtensions():
             data.append(v)
 
         self.pmpg.putData(data, 'resumo_consumo', month)
-        print('Finalizou')
+        logging.debug('---> Resume Consumed has been done <---');
 
 
     # Demonstrative FMS - PAB, AIH
@@ -200,7 +198,7 @@ class administrationExtensions():
         op = billing[1]
         self.pmpg.execOperation([proc, mnt], op)
         #return {"Month": month}
-        print("Backup Done %s" % month)
+        logging.debug("Backup Done %s" % month)
 
 
 # run.setExt('9998','2824',"'Ramal'")

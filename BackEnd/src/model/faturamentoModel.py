@@ -162,7 +162,7 @@ class vw_sme_escolas(db.Model):
         self.VALIDAR_HORA = VALIDAR_HORA
 
 
-class vw_sms_aih_0800s(db.Model):
+class vw_fms_aih_0800s(db.Model):
     MES_FATURAMENTO_ID = db.Column(db.Integer, primary_key=True)
     MES_ID	= db.Column(db.Integer)
     ID = db.Column(db.Integer)
@@ -199,7 +199,7 @@ class vw_sms_aih_0800s(db.Model):
         self.VALIDAR_HORA = VALIDAR_HORA
 
 
-class vw_sms_aihs(db.Model):
+class vw_fms_aihs(db.Model):
     MES_FATURAMENTO_ID = db.Column(db.Integer, primary_key=True)
     MES_ID	= db.Column(db.Integer)
     ID = db.Column(db.Integer)
@@ -236,7 +236,7 @@ class vw_sms_aihs(db.Model):
         self.VALIDAR_HORA = VALIDAR_HORA
 
 
-class vw_sms_pab_0800s(db.Model):
+class vw_fms_pab_0800s(db.Model):
     MES_FATURAMENTO_ID = db.Column(db.Integer, primary_key=True)
     MES_ID	= db.Column(db.Integer)
     ID = db.Column(db.Integer)
@@ -273,7 +273,7 @@ class vw_sms_pab_0800s(db.Model):
         self.VALIDAR_HORA = VALIDAR_HORA
 
 
-class vw_sms_pabs(db.Model):
+class vw_fms_pabs(db.Model):
     MES_FATURAMENTO_ID = db.Column(db.Integer, primary_key=True)
     MES_ID	= db.Column(db.Integer)
     ID = db.Column(db.Integer)
@@ -326,16 +326,16 @@ def getFat(group,month,page_num):
         query = vw_sme_cmeis.query.filter(vw_sme_cmeis.MES_ID==month)
 
     if group == 4:
-        query = vw_sms_pabs.query.filter(vw_sms_pabs.MES_ID==month)
+        query = vw_fms_pabs.query.filter(vw_fms_pabs.MES_ID==month)
     
     if group == 5:
-        query = vw_sms_pab_0800s.query.filter(vw_sms_pab_0800s.MES_ID==month)
+        query = vw_fms_pab_0800s.query.filter(vw_fms_pab_0800s.MES_ID==month)
 
     if group == 6:
-        query = vw_sms_aihs.query.filter(vw_sms_aihs.MES_ID==month)
+        query = vw_fms_aihs.query.filter(vw_fms_aihs.MES_ID==month)
     
     if group == 7:
-        query = vw_sms_aih_0800s.query.filter(vw_sms_aih_0800s.MES_ID==month)
+        query = vw_fms_aih_0800s.query.filter(vw_fms_aih_0800s.MES_ID==month)
 
 
     extensions = query

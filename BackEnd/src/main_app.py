@@ -68,15 +68,15 @@ app.register_blueprint(bp_lg)
 app.register_blueprint(bp_am)
 app.register_blueprint(bp_xls)
 app.register_blueprint(bp_lcl)
-logging.basicConfig(filename='main.proc.log',level=logging.DEBUG)
-
+#logging.basicConfig(filename='main.proc.log',level=logging.DEBUG)
+logging.basicConfig(filename='/var/log/flask/main.proc.log',level=logging.DEBUG)
 class main():
     def __init__(self):
         self.request = PMPG()
         self.sql = sqls()
         self.adm = administrationExtensions()
         self.gp = {'PMPG': ['PMPG', 'SME_ESCOLA', 'SME_CMEI']
-                 , 'FMS': ['SMS_AIH', 'SMS_PAB']}
+                 , 'FMS': ['FMS_AIH', 'FMS_PAB']}
         
         # self.base_root = srcUtils('pdf').get('src_utils')
 
@@ -117,7 +117,7 @@ class main():
                 else:
                     logging.debug(" Qty Rows: %s Group: %s Grouping: %s " % (len(df), index, value))
                     # Export Views to Excel
-                    # self.request.writeExcel(df, value, index, file_to_write)
+                    self.request.writeExcel(df, value, index, file_to_write)
                     logging.debug(" --- Group %s %s seconds --- " % (value, (time.time() - temp)))
 
         logging.debug(" --- %s seconds --- " % (time.time()- start_time))

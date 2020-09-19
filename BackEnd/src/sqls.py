@@ -1,3 +1,6 @@
+import logging
+#logging.basicConfig(filename='main.proc.log',level=logging.DEBUG)
+logging.basicConfig(filename='/var/log/flask/main.proc.log',level=logging.DEBUG)
 class sqls():
 
     # Create Table
@@ -22,19 +25,19 @@ class sqls():
                  " , DISTRIBUTOR_ID int " \
                  " , CONSTRAINT Faturamento_PK PRIMARY KEY(FATURAMENTO_ID) " \
                  " , CONSTRAINT Faturamento_UK UNIQUE KEY(ORIGEM,DESTINO,DATA,HORA))" % month
-        print("The table FATURAMENTO_%s has been created!" % month)
+        logging.debug("The table FATURAMENTO_%s has been created!" % month)
         return create, 5
 
     # Drop Table
     def dropTable(self, month):
         drop = "DROP TABLE IF EXISTS FATURAMENTO_%s " % month
-        print("The table FATURAMENTO_%s has been dropped!" % month)
+        logging.debug("The table FATURAMENTO_%s has been dropped!" % month)
         return drop, 5, month
 
     # Drop Table
     def dropTableVw(self, group):
         drop = "DROP TABLE IF EXISTS VW_{}s ".format(group)
-        print("The table VW_{}s has been dropped!".format(group))
+        logging.debug("The table VW_{}s has been dropped!".format(group))
         return drop, 5, group
 
     # Get Data
@@ -119,7 +122,7 @@ class sqls():
                      " ELSE USERCOST  " \
                      " END AS 'CUSTO'  " \
                      " , USERID AS 'USER_ID' " \
-                     " , USERDESC AS 'USER_DESC' " \
+                     " , REPLACE(USERDESC, 'SMS', 'FMS') AS 'USER_DESC' " \
                      " , DISTRIBUTORID AS 'DISTRIBUTOR_ID' " \
                      " FROM INTEGRATED_{}  " \
                      " WHERE BATCHID IN (270,303)  " \
@@ -192,7 +195,7 @@ class sqls():
                      " ORIG.USERCOST  " \
                      " END AS 'CUSTO'  " \
                      " , ORIG.USERID AS 'USER_ID' " \
-                     " , ORIG.USERDESC AS 'USER_DESC' " \
+                     " , REPLACE(ORIG.USERDESC, 'SMS', 'FMS') AS 'USER_DESC' " \
                      " , ORIG.DISTRIBUTORID AS 'DISTRIBUTOR_ID' " \
                      " FROM INTEGRATED_{} ORIG " \
                      " JOIN INTEGRATED_{} DEST ON DEST.RelatedOriginatingID = ORIG.TransactionID " \

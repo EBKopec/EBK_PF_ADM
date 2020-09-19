@@ -3,11 +3,9 @@ from datetime import datetime
 from fpdf import FPDF, fpdf
 from tqdm.auto import tqdm
 import numpy as np
-
 from administration import administrationExtensions as ae
 
 locale.setlocale(locale.LC_ALL, '')
-
 
 class exportPDF(FPDF):
 

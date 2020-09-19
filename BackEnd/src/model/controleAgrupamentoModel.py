@@ -114,9 +114,9 @@ def exts(ext,page_num=1):
     else:
         extensions = query.join(Users, Users.USER_ID==controle_agrupamento.user_group_id)\
                           .join(Tarifa, Tarifa.USER_ID == Users.USER_ID)\
-                          .join(PLACE, PLACE.id_local_setor == controle_agrupamento.id_local_setor)\
-                          .join(LOCAL, LOCAL.id_local == PLACE.id_local)\
-                          .join(SETOR, SETOR.id_setor == SETOR.id_setor)\
+                          .join(PLACE, PLACE.id_local_setor == controle_agrupamento.id_local_setor, isouter=True)\
+                          .join(LOCAL, LOCAL.id_local == PLACE.id_local, isouter=True)\
+                          .join(SETOR, SETOR.id_setor == SETOR.id_setor, isouter=True)\
                           .filter(controle_agrupamento.linha==ext)\
                           .group_by(controle_agrupamento.linha)
     

@@ -1,0 +1,47 @@
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 177-304-001
+INFO:werkzeug: * Running on http://localhost:5000/ (Press CTRL+C to quit)
+INFO:werkzeug: * Restarting with stat
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 177-304-001
+INFO:werkzeug: * Running on http://localhost:5000/ (Press CTRL+C to quit)
+INFO:werkzeug:127.0.0.1 - - [18/Sep/2020 15:21:22] "[37mOPTIONS /login HTTP/1.1[0m" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Sep/2020 15:21:24] "[37mPOST /login HTTP/1.1[0m" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Sep/2020 15:21:27] "[37mOPTIONS /ano HTTP/1.1[0m" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Sep/2020 15:21:27] "[37mGET /ano HTTP/1.1[0m" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Sep/2020 15:21:27] "[37mOPTIONS /mes HTTP/1.1[0m" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Sep/2020 15:21:28] "[37mGET /mes HTTP/1.1[0m" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Sep/2020 15:21:39] "[37mOPTIONS /pmpg/total/20203 HTTP/1.1[0m" 200 -
+INFO:werkzeug:127.0.0.1 - - [18/Sep/2020 15:21:39] "[37mGET /pmpg/total/20203 HTTP/1.1[0m" 200 -
+INFO:werkzeug: * Detected change in 'E:\\Projetos\\Portal\\PF\\EBK_PF_Adm\\BackEnd\\src\\sqls.py', reloading
+INFO:werkzeug: * Restarting with stat
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 177-304-001
+INFO:werkzeug: * Running on http://localhost:5000/ (Press CTRL+C to quit)
+INFO:werkzeug: * Detected change in 'E:\\Projetos\\Portal\\PF\\EBK_PF_Adm\\BackEnd\\src\\model\\faturamentoModel.py', reloading
+INFO:werkzeug: * Restarting with stat
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 177-304-001
+INFO:werkzeug: * Running on http://localhost:5000/ (Press CTRL+C to quit)
+INFO:werkzeug: * Detected change in 'E:\\Projetos\\Portal\\PF\\EBK_PF_Adm\\BackEnd\\src\\app.py', reloading
+INFO:werkzeug: * Restarting with stat
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 177-304-001
+INFO:werkzeug: * Running on http://localhost:5000/ (Press CTRL+C to quit)
+INFO:werkzeug: * Detected change in 'E:\\Projetos\\Portal\\PF\\EBK_PF_Adm\\BackEnd\\src\\main_app.py', reloading
+INFO:werkzeug: * Restarting with stat
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 177-304-001
+INFO:werkzeug: * Running on http://localhost:5000/ (Press CTRL+C to quit)
+INFO:werkzeug: * Detected change in 'E:\\Projetos\\Portal\\PF\\EBK_PF_Adm\\BackEnd\\src\\main_app.py', reloading
+INFO:werkzeug: * Restarting with stat
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 177-304-001
+INFO:werkzeug: * Running on http://localhost:5000/ (Press CTRL+C to quit)
+INFO:werkzeug: * Detected change in 'E:\\Projetos\\Portal\\PF\\EBK_PF_Adm\\BackEnd\\src\\app.py', reloading
+INFO:werkzeug: * Restarting with stat
+WARNING:werkzeug: * Debugger is active!
+INFO:werkzeug: * Debugger PIN: 177-304-001
+INFO:werkzeug: * Running on http://localhost:5000/ (Press CTRL+C to quit)
+INFO:werkzeug: * Detected change in 'E:\\Projetos\\Portal\\PF\\EBK_PF_Adm\\BackEnd\\src\\sqls.py', reloading
+INFO:werkzeug: * Restarting with stat
