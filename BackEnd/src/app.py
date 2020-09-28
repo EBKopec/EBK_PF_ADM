@@ -173,7 +173,7 @@ class PMPG():
         position - position to be written """
     def writeExcelExt(self, data, group, file_to_write):
         if (len(data)) == 0:
-            print('\n -:No Data at this position:-\n')
+            logging.debug('\n -:No Data at this position:-\n')
             return
 
         if group == 'PMPG':
@@ -190,12 +190,12 @@ class PMPG():
         # print('Mês', df_d['MONTH']) 
         
         self.append_df_to_excel(file_to_write, df_data, sheet_name=group, startrow=pos_row_data, header=None, index=False, startcol=3)
-        print('\n --->Group %s<--- \n --->Qty Ext %s<--- \n --->Line %s<---\n ' % (df_d['GROUPS'][0], df_d['QTY'][0], pos_row_data))
+        logging.debug('\n --->Group %s<--- \n --->Qty Ext %s<--- \n --->Line %s<---\n ' % (df_d['GROUPS'][0], df_d['QTY'][0], pos_row_data))
 
     # Grava o Mês da Planilha
     def writeExcelMonth(self, data, group, file_to_write):
         if (len(data)) == 0:
-            print('\n -:No Data at this position:-\n')
+            logging.debug('\n -:No Data at this position:-\n')
             return
         
         if group == 'PMPG':
@@ -211,7 +211,7 @@ class PMPG():
     # Write Prop Ext Values
     def writeExcelProp(self, prop, group, file_to_write):
         if (len(prop)) == 0:
-            print('\n -:No Proportional at this position:-\n')
+            logging.debug('\n -:No Proportional at this position:-\n')
             return
 
         if group == 'PMPG':
@@ -227,7 +227,7 @@ class PMPG():
         pos_row_prop = df_p['POS_ROW'][0]
         
         self.append_df_to_excel(file_to_write, df_prop, sheet_name=group, startrow=pos_row_prop, header=None, index=False, startcol=5)
-        print('\n --->Groups %s<--- \n --->Prop %s<--- \n --->Pos ROW %s<---\n ' % (df_p['GROUPS'][0], df_p['PROP'][0], pos_row_prop))
+        logging.debug('\n --->Groups %s<--- \n --->Prop %s<--- \n --->Pos ROW %s<---\n ' % (df_p['GROUPS'][0], df_p['PROP'][0], pos_row_prop))
         return
 
 

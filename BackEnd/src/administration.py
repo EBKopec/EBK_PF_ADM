@@ -9,8 +9,8 @@ import logging
 pd.options.mode.chained_assignment = None
 locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
-logging.basicConfig(filename='main.proc.log',level=logging.DEBUG)
-#logging.basicConfig(filename='/var/log/flask/main.proc.log',level=logging.DEBUG)
+#logging.basicConfig(filename='main.proc.log',level=logging.DEBUG)
+logging.basicConfig(filename='/var/log/flask/main.proc.administration.log',level=logging.DEBUG)
 class administrationExtensions():
 
     def __init__(self):

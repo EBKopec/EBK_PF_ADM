@@ -82,8 +82,8 @@ class main():
 
     def mainDef(self,month):
 
-        logging.basicConfig(filename='main.proc'+month+'.log',level=print)
-        #logging.basicConfig(filename='/var/log/flask/main.proc.log',level=DEBUG)
+        #logging.basicConfig(filename='main.proc'+month+'.log',level=print)
+        logging.basicConfig(filename='/var/log/flask/main.proc.'+month+'.log',level=logging.DEBUG)
         base_root = srcUtils('BASE_ROOT').get('src_utils')
         base_root_excel = srcUtils('XLSX').get('src_utils')
         folder = utils.checkDir(base_root,'Fechamento')
@@ -92,11 +92,11 @@ class main():
 
         start_time = time.time()
         # print(srcUtils('pdf').get('src_utils'))
-        print(" Started: %s --- Period: %s" % (datetime.now(), month))
+        logging.debug(" Started: %s --- Period: %s" % (datetime.now(), month))
         
         # Import Data from VSC to NF
         #self.request.importVSCtoNF(month)
-        print(" --- %s seconds --- " % (time.time() - start_time))
+        logging.debug(" --- %s seconds --- " % (time.time() - start_time))
 
         for index in self.request.groups:
             
@@ -110,27 +110,27 @@ class main():
                 temp = time.time()
 
                 # Insert Groups
-                #self.request.insertGroups(month, value)
+                self.request.insertGroups(month, value)
                 getView = self.sql.getViews(value, month)
-                # getExtQty = self.sql.getQtyExt(value, utils.monthId(month))
-                # getVlExt = self.sql.getVlPtExt(value, utils.monthId(month))
+                getExtQty = self.sql.getQtyExt(value, utils.monthId(month))
+                getVlExt = self.sql.getVlPtExt(value, utils.monthId(month))
                 df = self.request.execOperation(getView[0], getView[1])
-                # dfExt = self.request.execOperation(getExtQty[0], getExtQty[1])
-                # dfVlExt = self.request.execOperation(getVlExt[0],getVlExt[1])
+                dfExt = self.request.execOperation(getExtQty[0], getExtQty[1])
+                dfVlExt = self.request.execOperation(getVlExt[0],getVlExt[1])
                 #month_id = utils.monthId(month) + '01'
                 # print('dfExt', dfExt[0][2])
                 if len(df) == 0:
                    continue
                 else:
-                    print(" Qty Rows: %s Group: %s Grouping: %s " % (len(df), index, value))
+                    logging.debug(" Qty Rows: %s Group: %s Grouping: %s " % (len(df), index, value))
                     # Export Views to Excel
                     #self.request.writeExcelMonth(month_id, value, file_to_write)
-                    # self.request.writeExcelExt(dfExt, index, file_to_write)
-                    # self.request.writeExcelProp(dfVlExt, index, file_to_write)
-                    # self.request.writeExcel(df, value, index, file_to_write)
-                    print(" --- Group %s %s seconds --- " % (value, (time.time() - temp)))
+                    self.request.writeExcelExt(dfExt, index, file_to_write)
+                    self.request.writeExcelProp(dfVlExt, index, file_to_write)
+                    self.request.writeExcel(df, value, index, file_to_write)
+                    logging.debug(" --- Group %s %s seconds --- " % (value, (time.time() - temp)))
 
-        print(" --- %s seconds --- " % (time.time()- start_time))
+        logging.debug(" --- %s seconds --- " % (time.time()- start_time))
         self.zipTotal(month,'XLSX')
         self.total(month)
         self.summarizedReport(month)
@@ -145,7 +145,7 @@ class main():
         else:
             utils.zipFilesInDir(base_root, archiveZip, lambda name : 'pdf' in name)
 
-        print('All files %s zipped successfully!' % ( type_file )) 
+        logging.debug('All files %s zipped successfully!' % ( type_file )) 
         
         # calling function to get all file paths in the directory 
         # file_paths = utils.get_all_file_paths(base_root)
@@ -169,7 +169,7 @@ class main():
     def total(self, month):
         for index in self.gp:
             for value in self.gp[index]:
-                print("\n Grupo: %s " % value)
+                logging.debug("\n Grupo: %s " % value)
                 self.adm.saveTotal(value, month)
 
     
@@ -216,7 +216,7 @@ class App(Resource):
 
     def get(self, month):
         self.pmpg.mainDef(month)
-        print('Executado_Mes %s' % (month))
+        logging.debug('Executado_Mes %s' % (month))
 
         return {"period":month}, 200
 

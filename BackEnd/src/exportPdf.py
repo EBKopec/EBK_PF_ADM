@@ -16,7 +16,8 @@ class exportPDF(FPDF):
         super().__init__()
         self.ae = ae()
         self.mydate = datetime.now()
-        self.imagem = 'E:/DSA/Workspace/Faturamento/Backup/Fechamento/logo_novafibra.png'
+        # self.imagem = 'E:/DSA/Workspace/Faturamento/Backup/Fechamento/logo_novafibra.png'
+        self.imagem = '/app/files/images/logo_novafibra.png'
 
     # header
     def headerGroup(self):
