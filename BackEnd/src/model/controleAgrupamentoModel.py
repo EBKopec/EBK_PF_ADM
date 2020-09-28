@@ -99,11 +99,11 @@ def exts(ext,page_num=1):
                             , controle_agrupamento.status
                             , LOCAL.descricao_local
                             , SETOR.descricao_setor
-                            , controle_agrupamento.data_alteracao
-                            , db.func.CalculoRamal( controle_agrupamento.data_validacao_cliente
-                                                  , controle_agrupamento.data_cancelamento
-                                                  , Tarifa.VALOR_RAMAL
-                                                  , controle_agrupamento.status).label('PROPORCIONAL'))
+                            , controle_agrupamento.data_alteracao)
+                            # , db.func.CalculoRamal( controle_agrupamento.data_validacao_cliente
+                            #                       , controle_agrupamento.data_cancelamento
+                            #                       , Tarifa.VALOR_RAMAL
+                            #                       , controle_agrupamento.status).label('PROPORCIONAL'))
     if (ext == 0):
         extensions = query.join(Users, Users.USER_ID==controle_agrupamento.user_group_id)\
                           .join(Tarifa, Tarifa.USER_ID == Users.USER_ID)\
@@ -153,10 +153,11 @@ def extsKeep(sts):
                             , controle_agrupamento.data_cancelamento
                             , controle_agrupamento.status
                             , controle_agrupamento.data_alteracao
-                            , db.func.CalculoRamal( controle_agrupamento.data_validacao_cliente
-                                                  , controle_agrupamento.data_cancelamento
-                                                  , Tarifa.VALOR_RAMAL
-                                                  , controle_agrupamento.status).label('PROPORCIONAL'))
+                            # , db.func.CalculoRamal( controle_agrupamento.data_validacao_cliente
+                            #                       , controle_agrupamento.data_cancelamento
+                            #                       , Tarifa.VALOR_RAMAL
+                            #                       , controle_agrupamento.status).label('PROPORCIONAL')
+                                                  )
     extensions = query.join(Users, Users.USER_ID==controle_agrupamento.user_group_id)\
                       .join(Tarifa, Tarifa.USER_ID == Users.USER_ID)\
                       .filter(controle_agrupamento.status.in_(sts))\

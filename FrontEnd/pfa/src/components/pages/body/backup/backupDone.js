@@ -52,6 +52,7 @@ export default class backupDone extends Component {
             console.log(err);
             return alert('Não há backups para serem realizados')
         }
+        alert(`Backup Realizado para o período: ${periodSelected.value}`)
         this.setState(({periodSelected: null}));
         this.backupDone();
         this.toBackup();

@@ -5,7 +5,7 @@ import Table from '../../../utils/table/table';
 import api from "../../../services/api";
 import { checkArray } from '../../../utils/bytes';
 
-const columns = "linha.Grupo.tipo_linha.status.data_envio_nova.data_validacao_cliente.PROPORCIONAL.data_alteracao.data_cancelamento.descricao_local.descricao_setor";
+const columns = "linha.Grupo.tipo_linha.status.data_envio_nova.data_validacao_cliente.data_alteracao.data_cancelamento.descricao_local.descricao_setor";
 const heads = [ 
     "LINHA",
     "GRUPO",
@@ -13,7 +13,6 @@ const heads = [
     "STATUS",
     "DATA DE CADASTRO",
     "DATA ATIVAÇÃO",
-    "VALOR PROP.",
     "DATA ALTERAÇÃO",
     "DATA CANCELAMENTO",
     "LOCAL",

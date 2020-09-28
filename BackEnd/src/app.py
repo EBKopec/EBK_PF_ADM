@@ -3,18 +3,22 @@ from datetime import datetime, date
 from tqdm.auto import tqdm
 from mysql import connector as c
 from openpyxl import load_workbook
+from openpyxl.styles import NamedStyle
+from openpyxl.cell import Cell
 from pyspin.spin import Spin1, Spinner
+from utils import utils
 import calendar
 import time
 import pandas as pds
 import pyodbc as pd
+import numpy as np
 import sys
 import locale
 from builtins import FileNotFoundError
 import logging
 
-#logging.basicConfig(level=logging.DEBUG)
-logging.basicConfig(filename='/var/log/flask/main.proc.log',level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(filename='/var/log/flask/main.proc.log',level=logging.DEBUG)
 class PMPG():
     def __init__(self):
         #self.url_vsc = 'Driver={SQL Server};server=189.85.23.20,25789;DATABASE=VSCDB;UID=everton.kopec;PWD=Nova@123'
@@ -22,7 +26,7 @@ class PMPG():
         # self.url_nova = 'DRIVER={MySQL ODBC 8.0 ANSI Driver};SERVER=10.85.24.17;' \
         #                 'PORT=3306;DATABASE=NovaFibra;UID=pfa;PWD=NovaFibr@2020;charset=utf8mb4'
         self.url_nova = 'Driver={MySQL ODBC 8.0 ANSI Driver};server=localhost;PORT=3306;DATABASE=novafibra;UID=root;PWD=Bigodao@00'
-        self.url_nova_proc = c.connect(user='root', password='Bigodao@00', db='NovaFibra', host='localhost', auth_plugin='mysql_native_password')
+        self.url_nova_proc = c.connect(user='root', password='Bigodao@00', db='novafibra', host='localhost', auth_plugin='mysql_native_password')
         self.sql = sqls()
         self.listGroupsCreated = []
         self.groups = {'PMPG': ['PMPG', 'PMPG_0800', 'SME_ESCOLA', 'SME_CMEI']
@@ -54,11 +58,13 @@ class PMPG():
         # print("Exec %s instrução %s" % (exec, ins))
         if ins == 0:
             cur_vsc.execute(str(exec))
+            # cur_vsc.close()
             return cur_vsc.fetchall()
         elif ins == 1:
             for data in values:
                 logging.debug('data: %s ' % (len(data)))
                 cur_nova.executemany(str(exec), data)
+
         elif ins == 2:
             cur_nova.execute(exec)
             data = cur_nova.fetchall()
@@ -67,14 +73,16 @@ class PMPG():
             cur_nova_proc.callproc(exec[0], [exec[1],exec[2]])
             for group in cur_nova_proc.stored_results():
                 data = pds.DataFrame(group.fetchall())
+            
             return data
         elif ins == 4:
             cur_nova_proc.callproc(exec[0], [exec[1][0], exec[1][1]])
+
         elif ins == 5:
             cur_nova_proc.callproc(exec[0], [exec[1]])
         else:
             cur_nova.execute(exec)
-
+        
         cur_nova.commit()
         cur_nova.close()
         cur_vsc.close()
@@ -158,25 +166,86 @@ class PMPG():
         c = b.replace('.', ',')
         return c.replace('v', '.')
 
+    # Write Ext Excel
+    """ data - data to be processed 
+        group - group to be written
+        file_to_write - the file will be written
+        position - position to be written """
+    def writeExcelExt(self, data, group, file_to_write):
+        if (len(data)) == 0:
+            print('\n -:No Data at this position:-\n')
+            return
+
+        if group == 'PMPG':
+            group = 'Faturar_PMPG_SME'
+        else:
+            group = 'Faturar_FMS'
+
+        data = data
+        df_d = pds.DataFrame.from_records(data, columns=['QTY','GROUPS','POS_COL', 'POS_ROW', 'MONTH'])
+        df_data = df_d[['QTY']]
+        pos_row_data = df_d['POS_ROW'][0]
+        # month_id = {'month':[pds.to_datetime(month, format='%Y%m%d')]}
+        # df_month = pds.DataFrame(data=month_id,columns=['month'])
+        # print('Mês', df_d['MONTH']) 
+        
+        self.append_df_to_excel(file_to_write, df_data, sheet_name=group, startrow=pos_row_data, header=None, index=False, startcol=3)
+        print('\n --->Group %s<--- \n --->Qty Ext %s<--- \n --->Line %s<---\n ' % (df_d['GROUPS'][0], df_d['QTY'][0], pos_row_data))
+
+    # Grava o Mês da Planilha
+    def writeExcelMonth(self, data, group, file_to_write):
+        if (len(data)) == 0:
+            print('\n -:No Data at this position:-\n')
+            return
+        
+        if group == 'PMPG':
+            group = 'Utilizacao_PMPG_SME'    
+        else:
+            group = 'Utilizacao_FMS'
+        
+        month_id = {'month':[pds.to_datetime(data, format='%Y%m%d')]}
+        df = pds.DataFrame(data=month_id, columns=['month'])
+        self.append_df_to_excel(file_to_write, df, sheet_name=group, startrow=4, header=None, index=False, startcol=4)
+
+  
+    # Write Prop Ext Values
+    def writeExcelProp(self, prop, group, file_to_write):
+        if (len(prop)) == 0:
+            print('\n -:No Proportional at this position:-\n')
+            return
+
+        if group == 'PMPG':
+            group = 'Faturar_PMPG_SME'
+        else:
+            group = 'Faturar_FMS'
+
+        # print('prop %s %s ' % (prop[0][0], prop[0][1]))
+        prop = prop
+        df_p = pds.DataFrame.from_records(prop, columns=['GROUPS','PROP','POS_COL','POS_ROW'])
+        df_prop = df_p[['PROP']]
+        # pos_col_prop = str(df['POS_COL'][0])
+        pos_row_prop = df_p['POS_ROW'][0]
+        
+        self.append_df_to_excel(file_to_write, df_prop, sheet_name=group, startrow=pos_row_prop, header=None, index=False, startcol=5)
+        print('\n --->Groups %s<--- \n --->Prop %s<--- \n --->Pos ROW %s<---\n ' % (df_p['GROUPS'][0], df_p['PROP'][0], pos_row_prop))
+        return
+
 
     # Write Detailed Grouping on Excel
     def writeExcel(self, data, group,file,file_to_write):
-
-        
         data = data
         df = pds.DataFrame.from_records(data, columns=[ 'TIPO', 'ORIGEM', 'DATA'
                                                       , 'HORA', 'DESTINO', 'CIDADE_DESTINO'
                                                       , 'DURACAO_REAL', 'CUSTO'])
         df['ORIGEM'] = pds.to_numeric(df['ORIGEM'])
         df['DESTINO'] = pds.to_numeric(df['DESTINO'])
+        # df['DURACAO_REAL'] = pds.to_datetime(df['DURACAO_REAL']).apply(lambda x: x.strftime(r'%H:%M:%S'))
+        # df['DURACAO_REAL'] = pds.to_datetime(df['DURACAO_REAL'], format='%H:%M:%S').dt.time
+        # df['DURACAO_REAL'] = pds.to_datetime(df['DURACAO_REAL'], format='%H:%M:%S') + pds.to_timedelta(df['DURACAO_REAL'], unit='s')
+        # df['DURACAO_REAL'] = df['DURACAO_REAL'].dt.time
+        df['CUSTO'] = pds.to_numeric(df['CUSTO'], downcast='float')
+        # print('duracao_real tipo %s ' % (pds.Series(df['DURACAO_REAL']).apply(lambda x: x.strftime(r'%H:%M:%S'))))
 
-        # copyfile(file_to_read,file_to_write)
-
-        # if file == 'PMPG':
-        #     self.file_to_write = 'E:/DSA/Workspace/Faturamento/Backup/Fechamento/Fechamento_PMPG.xlsx'
-
-        # if file == 'FMS':
-        #     self.file_to_write = 'E:/DSA/Workspace/Faturamento/Backup/Fechamento/Fechamento_FMS.xlsx'
 
         self.append_df_to_excel(file_to_write, df, sheet_name=group, startrow=4, header=None,
                                 index=False, startcol=1)
@@ -186,7 +255,7 @@ class PMPG():
     def append_df_to_excel(self, filename, df, sheet_name='Sheet1', startrow=None, startcol=None,
                            truncate_sheet=False,
                            **to_excel_kwargs):
-                           
+        # print('filename %s\n df %s\n sheet_name %s\n startrow %s\n startcol %s' % (filename,df,sheet_name,startrow,startcol))
         """
         Append a DataFrame [df] to existing Excel file [filename]
         into [sheet_name] Sheet.
@@ -239,9 +308,17 @@ class PMPG():
                 writer.book.remove(writer.book.worksheets[idx])
                 # create an empty sheet [sheet_name] using old index
                 writer.book.create_sheet(sheet_name, idx)
+                # date_style = NamedStyle(name='datetime', number_format='h:mm:ss')
+                # for cell in sheet_name.cell['H']:
+                #     cell.style = date_style
+                
+                # print("aqui")
+                
+
 
             # copy existing sheets
-            writer.sheets = {ws.title: ws for ws in writer.book.worksheets}
+            writer.sheets = {ws.title: ws for ws in writer.book.worksheets}          
+            
         except FileNotFoundError:
             # file does not exist yet, we will create it
             pass
@@ -252,10 +329,15 @@ class PMPG():
         if startcol is None:
             startcol = 0
 
+        # print('Data Frame %s' % df)
         # write out the new sheet
         df.to_excel(writer, sheet_name, startrow=startrow, startcol=startcol, **to_excel_kwargs)
 
+        # workbook = writer.book
+        # worksheet = writer.sheets[sheet_name]
+        # format1 = workbook.add_format({'num_format':"h:mm:ss"})
+        # worksheet.set_column('H:H', None, format1)
+
         # save the workbook
         writer.save()
-
    

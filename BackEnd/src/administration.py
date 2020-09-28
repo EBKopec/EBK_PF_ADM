@@ -7,9 +7,10 @@ import json
 from utils import utils
 import logging
 pd.options.mode.chained_assignment = None
-locale.setlocale(locale.LC_ALL, '')
+locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
-logging.basicConfig(filename='/var/log/flask/main.proc.log',level=logging.DEBUG)
+logging.basicConfig(filename='main.proc.log',level=logging.DEBUG)
+#logging.basicConfig(filename='/var/log/flask/main.proc.log',level=logging.DEBUG)
 class administrationExtensions():
 
     def __init__(self):
@@ -65,7 +66,7 @@ class administrationExtensions():
     # pre Resume consumption
     def preResCon(self, group, month):
         exc = self.excessCon(group, month)
-        exp = self.sql.extList(group)
+        exp = self.sql.extList(group, month)
         data = pd.DataFrame.from_records(self.pmpg.execOperation(exp[0], exp[1])
                                          , columns=['RAMAL', 'GRUPO', 'DATA_INSTALACAO', 'DATA_ATIVACAO'
                 , 'DATA_CANCELAMENTO', 'VALOR_RAMAL', 'STATUS', 'PROPORCIONAL'])
@@ -75,14 +76,14 @@ class administrationExtensions():
         data['VALOR_RAMAL'] = data['VALOR_RAMAL'].astype('float')
         faturar = pd.DataFrame()
         faturar['RAMAL_ATIVO'] = data.query(" STATUS in ('Y','N') "
-                                            " and PROPORCIONAL != '0.00' "
+                                            " and PROPORCIONAL != '0' "
                                             " and DATA_ATIVACAO_REF <= @utils.monthId(@month)").groupby('GRUPO')['RAMAL'].count()
         faturar['VALOR_RAMAL'] = data.groupby('GRUPO')['VALOR_RAMAL'].unique().astype(float)
         faturar['PARCIAL'] = data.query(" STATUS in ('Y','N') "
                                         " and PROPORCIONAL != '19.23' "
                                         " and DATA_ATIVACAO_REF <= @utils.monthId(@month)").groupby('GRUPO')['PROPORCIONAL'].sum()
         faturar['FATURAR_RAMAIS'] = data.query(" STATUS in ('Y','N') "
-                                               " and PROPORCIONAL != '0.00' "
+                                               " and PROPORCIONAL != '0' "
                                                " and DATA_ATIVACAO_REF <= @utils.monthId(@month)").groupby('GRUPO')['PROPORCIONAL'].sum()
         faturar['FRANQUIAS'] = xp['FRANQUIA_VALOR'].sum()
         faturar['EXCEDENTES'] = xp['EXCEDENTE_VALOR'].sum()

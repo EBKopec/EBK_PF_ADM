@@ -1,11 +1,14 @@
 import locale
 from datetime import datetime
+import calendar
 from fpdf import FPDF, fpdf
 from tqdm.auto import tqdm
+from utils import utils
+import pandas as pd
 import numpy as np
 from administration import administrationExtensions as ae
 
-locale.setlocale(locale.LC_ALL, '')
+locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
 class exportPDF(FPDF):
 
@@ -106,7 +109,16 @@ class exportPDF(FPDF):
     #Body Cover Page Demonstrative - FMS
     def drawBodyDmt(self,group, month):
         rescon = self.ae.resCon(group, month)
+        ref = datetime.strftime(pd.to_datetime(utils.monthId(month) + '01'), "%B/%Y")
+        year = int(datetime.strftime(pd.to_datetime(utils.monthId(month) + '01'), "%Y"))
+        mnt = int(datetime.strftime(pd.to_datetime(utils.monthId(month) + '01'), "%m"))
+        last_date = ""
+        if (calendar.monthrange(year, mnt)[1] > 30):
+            last_date = 30
+        elif(calendar.monthrange(year, mnt)[1] < 30):
+            last_date = 28
 
+        # print('Mês de referência %s %s' % (ref, last_date));
         self.cell(190, 5, "MUNICIPIO DE PONTA GROSSA ( " + group + " )", ln=1)
         self.set_font("helvetica", size=9)
         self.set_text_color(102, 102, 102)
@@ -123,13 +135,9 @@ class exportPDF(FPDF):
         self.cell(50, 5)
         x = self.get_x()
         y = self.get_y()
-        self.multi_cell(30,5,'Mês de Referência\n' +
-                        self.mydate.strftime("%B") + '/'
-                        + str(self.mydate.year),border=1)
+        self.multi_cell(30,5,'Mês de Referência\n %s' % ref,border=1)
         self.set_xy(x+50,y)
-        self.multi_cell(31,5, 'Data do Vencimento\n 30/' +
-                        (self.mydate.strftime("%B")) + '/'
-                        + str(self.mydate.year),border=1)
+        self.multi_cell(31,5, 'Data do Vencimento\n %s/%s' % (last_date, ref),border=1)
         self.set_xy(x+100,y)
         self.multi_cell(31, 5, 'Valor da sua Conta\n ' +
                         rescon[15], border=1)

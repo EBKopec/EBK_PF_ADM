@@ -1,6 +1,7 @@
 import logging
-#logging.basicConfig(filename='main.proc.log',level=logging.DEBUG)
-logging.basicConfig(filename='/var/log/flask/main.proc.log',level=logging.DEBUG)
+from utils import utils
+logging.basicConfig(filename='main.proc.log',level=logging.DEBUG)
+#logging.basicConfig(filename='/var/log/flask/main.proc.log',level=logging.DEBUG)
 class sqls():
 
     # Create Table
@@ -217,20 +218,60 @@ class sqls():
         return select, 0, table
 
     # Get Views
-    def getViews(self, grupo, month):
+    def getViews(self, group, month):
         view = " SELECT TIPO " \
                " , ORIGEM " \
                " , DATE_FORMAT(DATA, '%d/%m/%Y') DATA " \
                " , DATE_FORMAT(HORA, '%H:%i:%s') HORA " \
                " , DESTINO " \
                " , CIDADE_DESTINO " \
-               " , DURACAO_REAL " \
-               " , REPLACE(CUSTO,'.',',')  CUSTO " \
+               " , DURACAO_REAL" \
+               " , CUSTO " \
                " FROM VW_{}s  " \
                " WHERE CUSTO > 0 " \
                "   and MES_ID = {} " \
-               " ORDER BY 2 ASC, 3 ASC, 4 ASC".format(grupo, month)
+               " ORDER BY 2 ASC, 3 ASC, 4 ASC".format(group, month)
         return view, 2
+
+
+    # Get Partial Ext value
+    def getVlPtExt(self, group, month):
+        month =  str(utils.monthId(month)) + '01'
+        partialValue = " SELECT `GROUPS` " \
+                            " , SUM(PROPORCIONAL) PROP " \
+                            " , CAST('5' AS CHAR) AS POS_COL " \
+                            " , GroupPosition(`GROUPS`) POS_ROW " \
+                       " FROM ( " \
+                            " select CA.LINHA " \
+                                 " , SUBSTR(US.USER_GROUP, 30, 50) as `GROUPS`   " \
+                                 " , CalculoRamal(CA.data_validacao_cliente,CA.data_cancelamento,date_format({}, '%Y-%m-%d'),T.VALOR_RAMAL,ca.STATUS) AS 'PROPORCIONAL' " \
+                                 " from controle_agrupamento CA  " \
+                                 " JOIN USERS US ON US.USER_ID = CA.USER_GROUP_ID  " \
+                                 " JOIN tarifa T ON us.user_id = t.user_id " \
+                                 " where CA.STATUS IN ('Y','N') " \
+                                   " AND DATE_FORMAT(CA.DATA_VALIDACAO_CLIENTE, '%Y-%m-%d') <= date_format({}, '%Y-%m-%d') " \
+                                   " AND US.USER_GROUP LIKE '%{}%' " \
+                                " GROUP BY CA.LINHA) TMP " \
+                        " WHERE TMP.PROPORCIONAL != 19.23 " \
+                          " AND TMP.PROPORCIONAL != 0 " \
+                        " GROUP BY `GROUPS` ".format(month, month, group)
+        return partialValue, 2
+
+    # Get Qty Ext
+    def getQtyExt(self, group, month):
+        qtyExt = "SELECT COUNT(CA.LINHA) `QTY` " \
+                       " , SUBSTR(US.USER_GROUP, 30, 50) `GROUPS`  " \
+                       " , CAST('3' AS CHAR) POS_COL "\
+                       " , novafibra.GroupPosition(US.USER_GROUP) POS_ROW " \
+                       " , {} 'MONTH' " \
+                  " FROM CONTROLE_AGRUPAMENTO CA  " \
+                  " INNER JOIN USERS AS US ON CA.USER_GROUP_ID = US.USER_ID  " \
+                  " WHERE CA.STATUS = 'Y'  " \
+                  "   AND US.USER_GROUP LIKE '%{}%' " \
+                  "   AND DATE_FORMAT(CA.DATA_VALIDACAO_CLIENTE,'%Y%m') <= {} " \
+                  " GROUP BY US.USER_GROUP".format(month, group, month)
+
+        return qtyExt, 2
 
     # Create Views
     def insertGroupsProc(self, month, *group):
@@ -357,7 +398,8 @@ class sqls():
         return select, 2
 
     # Ext List
-    def extList(self, group):
+    def extList(self, group, month):
+        month =  str(utils.monthId(month)) + '01'
         select = "select CA.linha as 'RAMAL' " \
                  "     , US.USER_GROUP as 'GRUPO' " \
                  "     , CA.data_envio_nova as 'DATA_INSTALACAO' " \
@@ -365,12 +407,13 @@ class sqls():
                  "     , CA.data_cancelamento as 'DATA_CANCELAMENTO' " \
                  "     , T.VALOR_RAMAL    AS 'VALOR_RAMAL' " \
                  "     , CA.STATUS AS 'STATUS'" \
-                 "     , CalculoRamal(CA.data_validacao_cliente,CA.data_cancelamento,T.VALOR_RAMAL,ca.STATUS) AS  'PROPORCIONAL' " \
+                 "     , CalculoRamal(CA.data_validacao_cliente,CA.data_cancelamento,DATE_FORMAT({}, '%Y-%m-%d'),T.VALOR_RAMAL,ca.STATUS) AS  'PROPORCIONAL' " \
                  " from controle_agrupamento CA " \
                  " JOIN USERS US ON US.USER_ID = CA.USER_GROUP_ID " \
                  " JOIN tarifa T ON us.user_id = t.user_id " \
                  " where CA.STATUS IN ('Y','N') " \
+                 "   AND DATE_FORMAT(CA.DATA_VALIDACAO_CLIENTE, '%Y-%m-%d') <= DATE_FORMAT({}, '%Y-%m-%d') " \
                  "   AND US.USER_GROUP LIKE '%{}%' " \
                  " GROUP BY CA.linha " \
-                 " order by 4 asc, 5 DESC ".format(group)
+                 " order by 4 asc, 5 DESC ".format(month, month, group)
         return select, 2
