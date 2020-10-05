@@ -22,11 +22,11 @@ export default class MainFunction extends Component {
     handleSubmit = async e => {
         const { selectedYear, selectedMonth } = this.state;
         alert(`Solicitado a execução para o mês de ${selectedMonth.label} de ${selectedYear.value}.\nDentro de alguns minutos sua solicitação será processada!`);
+        const response = await api.get(`/pmpg/${selectedYear.value}${selectedMonth.value}`);
+        // console.log('Response', response.data.period);
+        const { period } = response.data;
         try {
-            const response = await api.get(`/pmpg/${selectedYear.value}${selectedMonth.value}`);
-            // console.log('Response', response.data.period);
-            const { period } = response.data;
-            // console.log(`Data ---->>> ${period.length}, ${response}`);
+            console.log(`Data ---->>> ${response}`);
             checkArray(period);
         } catch(err){
             console.log('Erro', err);

@@ -1,5 +1,8 @@
 import logging
 from utils import utils
+from datetime import datetime
+import calendar
+import pandas as pd
 logging.basicConfig(filename='main.proc.log',level=logging.DEBUG)
 #logging.basicConfig(filename='/var/log/flask/main.proc.log',level=logging.DEBUG)
 class sqls():
@@ -133,7 +136,8 @@ class sqls():
                      " , '4280558006451250' " \
                      " , '4280558006439595' " \
                      " , '4280558006435052' " \
-                     " , '4280558006437880') " \
+                     " , '4280558006437880' " \
+                     " , '4280558004008989' ) "\
                      " AND USERCOST != 0 " \
                      " AND (day(UTCTime) - day(localtime)) = 0" \
                      " AND ANI NOT IN ( '554200009990', '554200009991', '554200009992', '554200009993'" \
@@ -204,7 +208,8 @@ class sqls():
                      " , '4280558006451250' " \
                      " , '4280558006439595' " \
                      " , '4280558006435052' " \
-                     " , '4280558006437880') " \
+                     " , '4280558006437880' " \
+                     " , '4280558004008989' ) "\
                      " AND ORIG.BATCHID IN (270,303)" \
                      " AND DEST.BATCHID IN (270,303)" \
                      " AND ORIG.DISTRIBUTORID IN ('1','25') " \
@@ -236,7 +241,11 @@ class sqls():
 
     # Get Partial Ext value
     def getVlPtExt(self, group, month):
-        month =  str(utils.monthId(month)) + '01'
+        month_ini = str(utils.monthId(month)) + '01'
+        year = int(datetime.strftime(pd.to_datetime(utils.monthId(month) + '01'), "%Y"))
+        mnt = int(datetime.strftime(pd.to_datetime(utils.monthId(month) + '01'), "%m"))
+        last_date = calendar.monthrange(year, mnt)[1]
+        month =  str(utils.monthId(month)) + str(last_date)
         partialValue = " SELECT `GROUPS` " \
                             " , SUM(PROPORCIONAL) PROP " \
                             " , CAST('5' AS CHAR) AS POS_COL " \
@@ -249,16 +258,18 @@ class sqls():
                                  " JOIN USERS US ON US.USER_ID = CA.USER_GROUP_ID  " \
                                  " JOIN tarifa T ON us.user_id = t.user_id " \
                                  " where CA.STATUS IN ('Y','N') " \
+                                   " AND CA.TIPO_LINHA IN ('RAMAL','CNG','SIP') " \
                                    " AND DATE_FORMAT(CA.DATA_VALIDACAO_CLIENTE, '%Y-%m-%d') <= date_format({}, '%Y-%m-%d') " \
                                    " AND US.USER_GROUP LIKE '%{}%' " \
                                 " GROUP BY CA.LINHA) TMP " \
                         " WHERE TMP.PROPORCIONAL != 19.23 " \
-                          " AND TMP.PROPORCIONAL != 0 " \
+                          " AND TMP.PROPORCIONAL > 0 " \
                         " GROUP BY `GROUPS` ".format(month, month, group)
         return partialValue, 2
 
     # Get Qty Ext
     def getQtyExt(self, group, month):
+        month = utils.monthId(month) + '01'
         qtyExt = "SELECT COUNT(CA.LINHA) `QTY` " \
                        " , SUBSTR(US.USER_GROUP, 30, 50) `GROUPS`  " \
                        " , CAST('3' AS CHAR) POS_COL "\
@@ -267,8 +278,9 @@ class sqls():
                   " FROM CONTROLE_AGRUPAMENTO CA  " \
                   " INNER JOIN USERS AS US ON CA.USER_GROUP_ID = US.USER_ID  " \
                   " WHERE CA.STATUS = 'Y'  " \
+                  "   AND CA.TIPO_LINHA IN ('RAMAL','CNG','SIP') " \
                   "   AND US.USER_GROUP LIKE '%{}%' " \
-                  "   AND DATE_FORMAT(CA.DATA_VALIDACAO_CLIENTE,'%Y%m') <= {} " \
+                  "   AND DATE_FORMAT(CA.DATA_VALIDACAO_CLIENTE,'%Y%m%d') <= {} " \
                   " GROUP BY US.USER_GROUP".format(month, group, month)
 
         return qtyExt, 2
@@ -399,7 +411,12 @@ class sqls():
 
     # Ext List
     def extList(self, group, month):
-        month =  str(utils.monthId(month)) + '01'
+        month_ini = str(utils.monthId(month)) + '01'
+        year = int(datetime.strftime(pd.to_datetime(utils.monthId(month) + '01'), "%Y"))
+        mnt = int(datetime.strftime(pd.to_datetime(utils.monthId(month) + '01'), "%m"))
+        last_date = calendar.monthrange(year, mnt)[1]
+        month =  str(utils.monthId(month)) + str(last_date)
+
         select = "select CA.linha as 'RAMAL' " \
                  "     , US.USER_GROUP as 'GRUPO' " \
                  "     , CA.data_envio_nova as 'DATA_INSTALACAO' " \
@@ -412,8 +429,9 @@ class sqls():
                  " JOIN USERS US ON US.USER_ID = CA.USER_GROUP_ID " \
                  " JOIN tarifa T ON us.user_id = t.user_id " \
                  " where CA.STATUS IN ('Y','N') " \
+                 "   AND CA.TIPO_LINHA IN ('RAMAL','CNG','SIP') " \
                  "   AND DATE_FORMAT(CA.DATA_VALIDACAO_CLIENTE, '%Y-%m-%d') <= DATE_FORMAT({}, '%Y-%m-%d') " \
                  "   AND US.USER_GROUP LIKE '%{}%' " \
                  " GROUP BY CA.linha " \
-                 " order by 4 asc, 5 DESC ".format(month, month, group)
+                 " order by 4 asc, 5 DESC ".format(month_ini, month, group)
         return select, 2

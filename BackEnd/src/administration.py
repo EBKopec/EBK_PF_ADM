@@ -76,14 +76,14 @@ class administrationExtensions():
         data['VALOR_RAMAL'] = data['VALOR_RAMAL'].astype('float')
         faturar = pd.DataFrame()
         faturar['RAMAL_ATIVO'] = data.query(" STATUS in ('Y','N') "
-                                            " and PROPORCIONAL != '0' "
+                                            " and PROPORCIONAL > '0' "
                                             " and DATA_ATIVACAO_REF <= @utils.monthId(@month)").groupby('GRUPO')['RAMAL'].count()
         faturar['VALOR_RAMAL'] = data.groupby('GRUPO')['VALOR_RAMAL'].unique().astype(float)
         faturar['PARCIAL'] = data.query(" STATUS in ('Y','N') "
                                         " and PROPORCIONAL != '19.23' "
                                         " and DATA_ATIVACAO_REF <= @utils.monthId(@month)").groupby('GRUPO')['PROPORCIONAL'].sum()
         faturar['FATURAR_RAMAIS'] = data.query(" STATUS in ('Y','N') "
-                                               " and PROPORCIONAL != '0' "
+                                               " and PROPORCIONAL > '0' "
                                                " and DATA_ATIVACAO_REF <= @utils.monthId(@month)").groupby('GRUPO')['PROPORCIONAL'].sum()
         faturar['FRANQUIAS'] = xp['FRANQUIA_VALOR'].sum()
         faturar['EXCEDENTES'] = xp['EXCEDENTE_VALOR'].sum()

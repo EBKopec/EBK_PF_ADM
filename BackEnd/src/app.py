@@ -25,8 +25,8 @@ class PMPG():
         self.url_vsc = 'Driver={ODBC Driver 17 for SQL Server};server=189.85.23.20,25789;DATABASE=VSCDB;UID=everton.kopec;PWD=Nova@123'
         # self.url_nova = 'DRIVER={MySQL ODBC 8.0 ANSI Driver};SERVER=10.85.24.17;' \
         #                 'PORT=3306;DATABASE=NovaFibra;UID=pfa;PWD=NovaFibr@2020;charset=utf8mb4'
-        self.url_nova = 'Driver={MySQL ODBC 8.0 ANSI Driver};server=localhost;PORT=3306;DATABASE=novafibra;UID=root;PWD=Bigodao@00'
-        self.url_nova_proc = c.connect(user='root', password='Bigodao@00', db='novafibra', host='localhost', auth_plugin='mysql_native_password')
+        self.url_nova = 'Driver={MariaDB ODBC 3.0 Driver};server=10.85.24.33;PORT=3306;DATABASE=novafibra;UID=pfa;PWD=NovaFibr@2020'
+        self.url_nova_proc = c.connect(user='pfa', password='NovaFibr@2020', db='novafibra', host='10.85.24.33', auth_plugin='mysql_native_password')
         self.sql = sqls()
         self.listGroupsCreated = []
         self.groups = {'PMPG': ['PMPG', 'PMPG_0800', 'SME_ESCOLA', 'SME_CMEI']
@@ -190,10 +190,11 @@ class PMPG():
         # print('Mês', df_d['MONTH']) 
         
         self.append_df_to_excel(file_to_write, df_data, sheet_name=group, startrow=pos_row_data, header=None, index=False, startcol=3)
-        logging.debug('\n --->Group %s<--- \n --->Qty Ext %s<--- \n --->Line %s<---\n ' % (df_d['GROUPS'][0], df_d['QTY'][0], pos_row_data))
+        logging.debug('--->Groups: %s<--- \n--->Qty: %s<--- \n--->Pos ROW: %s<---\n ' % (df_d['GROUPS'][0], df_d['QTY'][0], pos_row_data))
 
     # Grava o Mês da Planilha
     def writeExcelMonth(self, data, group, file_to_write):
+        logging.debug(' len -> data %s ' % len(data))
         if (len(data)) == 0:
             logging.debug('\n -:No Data at this position:-\n')
             return
@@ -202,7 +203,7 @@ class PMPG():
             group = 'Utilizacao_PMPG_SME'    
         else:
             group = 'Utilizacao_FMS'
-        
+        logging.debug('group choosed %s ' % group)
         month_id = {'month':[pds.to_datetime(data, format='%Y%m%d')]}
         df = pds.DataFrame(data=month_id, columns=['month'])
         self.append_df_to_excel(file_to_write, df, sheet_name=group, startrow=4, header=None, index=False, startcol=4)
@@ -228,7 +229,6 @@ class PMPG():
         
         self.append_df_to_excel(file_to_write, df_prop, sheet_name=group, startrow=pos_row_prop, header=None, index=False, startcol=5)
         logging.debug('\n --->Groups %s<--- \n --->Prop %s<--- \n --->Pos ROW %s<---\n ' % (df_p['GROUPS'][0], df_p['PROP'][0], pos_row_prop))
-        return
 
 
     # Write Detailed Grouping on Excel
@@ -341,3 +341,6 @@ class PMPG():
         # save the workbook
         writer.save()
    
+
+
+

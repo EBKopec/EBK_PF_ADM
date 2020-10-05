@@ -68,7 +68,7 @@ app.register_blueprint(bp_am)
 app.register_blueprint(bp_xls)
 app.register_blueprint(bp_lcl)
 
-
+logging.basicConfig(filename='/var/log/flask/main.proc.log',level=logging.DEBUG)
 class main():
     def __init__(self):
         self.request = PMPG()
@@ -83,7 +83,6 @@ class main():
     def mainDef(self,month):
 
         #logging.basicConfig(filename='main.proc'+month+'.log',level=print)
-        logging.basicConfig(filename='/var/log/flask/main.proc.'+month+'.log',level=logging.DEBUG)
         base_root = srcUtils('BASE_ROOT').get('src_utils')
         base_root_excel = srcUtils('XLSX').get('src_utils')
         folder = utils.checkDir(base_root,'Fechamento')
@@ -218,7 +217,7 @@ class App(Resource):
         self.pmpg.mainDef(month)
         logging.debug('Executado_Mes %s' % (month))
 
-        return {"period":month}, 200
+        return {"period":month}
 
 api.add_resource(App, '/pmpg/<string:month>')
 if __name__ == '__main__':
