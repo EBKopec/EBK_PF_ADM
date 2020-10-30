@@ -17,6 +17,17 @@ class administrationExtensions():
         self.pmpg = PMPG()
         self.sql = sqls()
 
+    # Consume Ext
+    def conExt(self, group, month):
+        ext = self.sql.getExtTotal(group, month)
+        data = self.pmpg.execOperation(ext[0], ext[1])
+
+        df = pd.DataFrame.from_records(data, columns=['TIPO','SOMA_DE_DURACAO','SOMA_DE_CUSTO','ID_PDF','ORIGEM'])
+
+
+
+
+
     # Excess Consumption
     def excessCon(self, group, month):
         """
@@ -76,14 +87,14 @@ class administrationExtensions():
         data['VALOR_RAMAL'] = data['VALOR_RAMAL'].astype('float')
         faturar = pd.DataFrame()
         faturar['RAMAL_ATIVO'] = data.query(" STATUS in ('Y','N') "
-                                            " and PROPORCIONAL > '0' "
+                                            " and PROPORCIONAL > 0 "
                                             " and DATA_ATIVACAO_REF <= @utils.monthId(@month)").groupby('GRUPO')['RAMAL'].count()
         faturar['VALOR_RAMAL'] = data.groupby('GRUPO')['VALOR_RAMAL'].unique().astype(float)
         faturar['PARCIAL'] = data.query(" STATUS in ('Y','N') "
                                         " and PROPORCIONAL != '19.23' "
                                         " and DATA_ATIVACAO_REF <= @utils.monthId(@month)").groupby('GRUPO')['PROPORCIONAL'].sum()
         faturar['FATURAR_RAMAIS'] = data.query(" STATUS in ('Y','N') "
-                                               " and PROPORCIONAL > '0' "
+                                               " and PROPORCIONAL > 0 "
                                                " and DATA_ATIVACAO_REF <= @utils.monthId(@month)").groupby('GRUPO')['PROPORCIONAL'].sum()
         faturar['FRANQUIAS'] = xp['FRANQUIA_VALOR'].sum()
         faturar['EXCEDENTES'] = xp['EXCEDENTE_VALOR'].sum()
@@ -178,17 +189,33 @@ class administrationExtensions():
 
     # Demonstrative FMS - PAB, AIH
     def dmsFMS(self, group, month):
-        getView = self.sql.getViews(group, month)
-        df = pd.DataFrame.from_records(self.pmpg.execOperation(getView[0], getView[1]),
+        getView = self.sql.getVw_PDF(group, month)
+        getResults = self.pmpg.execOperation(getView[0], getView[1])
+
+        if len(getResults) == 0:
+            return
+
+        getList = self.sql.getListPdfs()
+        df = pd.DataFrame.from_records(getResults,
                                        columns=[ 'TIPO', 'ORIGEM', 'DATA', 'HORA'
-                                               , 'DESTINO', 'CIDADE_DESTINO', 'DURACAO', 'CUSTO']).\
-                          sort_values(by=['ORIGEM','TIPO'],ascending=True)
-        df['CUSTO'] = df['CUSTO'].replace(',','.', regex=True).astype(float)
+                                               , 'DESTINO', 'CIDADE_DESTINO', 'DURACAO'\
+                                               , 'CUSTO', 'ID_PDF', 'LOCAL']).\
+                          sort_values(by=['ORIGEM','TIPO','DATA','HORA'],ascending=True)
+        #df['CUSTO'] = df['CUSTO'].replace(',','.', regex=True).astype(float)
 
-        #print(df['CUSTO'])
-        df5 = df.groupby(['ORIGEM'])
+        # DF CDRs
+        dfResult = df.groupby(['ORIGEM','TIPO','ID_PDF'])
+        dfList = pd.DataFrame.from_records(self.pmpg.execOperation(getList[0], getList[1]),columns=['ID_PDF']).sort_values(by=['ID_PDF'], ascending=True)
 
-        return df,df5
+        dfResultTotal = df.groupby(['ID_PDF','TIPO'])[['CUSTO']].sum().sort_values(by=['ID_PDF','TIPO'], ascending=True).reset_index()
+
+        # dfTotal = dfResultTotal.groupby(['ID_PDF'])[['CUSTO']].sum().reset_index()
+        # print('dfResultTotal %s ' % dfResult)
+        # for i,j in dfResultTotal.iterrows():
+        #     print(j)
+
+
+        return df,dfResult,dfResultTotal
     
 
     # Backup Billing
@@ -204,16 +231,15 @@ class administrationExtensions():
 
 # run.setExt('9998','2824',"'Ramal'")
 # run.setExt('9090','2824',"'Ramal'")
-# run.setUpExt('9999')
+# run.setUpExt('9999')  
 # run.setUpExt('8889')
 # run.shutOffExt('9998')
 # run.changeExt('8888','2824')
-# grupos = {'PMPG': ['PMPG', 'SME_ESCOLA', 'SME_CMEI']
-#                 , 'FMS': ['SMS_AIH', 'SMS_PAB']}
+# grupos = {'FMS': ['FMS_PAB']}
 
 # run = administrationExtensions()
-# # # run.saveTotal('SME_CMEI',20204)
+# # # # # run.saveTotal('SME_CMEI',20204)
 
 # for index in grupos:
 #     for value in grupos[index]:
-#          run.preResCon(value, 20201)
+#         run.dmsFMS(value, 20192)

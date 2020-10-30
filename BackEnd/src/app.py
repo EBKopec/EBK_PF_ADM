@@ -25,7 +25,7 @@ class PMPG():
         self.url_vsc = 'Driver={ODBC Driver 17 for SQL Server};server=189.85.23.20,25789;DATABASE=VSCDB;UID=everton.kopec;PWD=Nova@123'
         # self.url_nova = 'DRIVER={MySQL ODBC 8.0 ANSI Driver};SERVER=10.85.24.17;' \
         #                 'PORT=3306;DATABASE=NovaFibra;UID=pfa;PWD=NovaFibr@2020;charset=utf8mb4'
-        self.url_nova = 'Driver={MariaDB ODBC 3.0 Driver};server=10.85.24.33;PORT=3306;DATABASE=novafibra;UID=pfa;PWD=NovaFibr@2020'
+        self.url_nova = 'Driver={MySQL ODBC 8.0 ANSI Driver};server=10.85.24.33;PORT=3306;DATABASE=novafibra;UID=pfa;PWD=NovaFibr@2020'
         self.url_nova_proc = c.connect(user='pfa', password='NovaFibr@2020', db='novafibra', host='10.85.24.33', auth_plugin='mysql_native_password')
         self.sql = sqls()
         self.listGroupsCreated = []

@@ -29,6 +29,7 @@ from tqdm.auto import tqdm
 from sqls import sqls
 from datetime import datetime, date
 from utils import utils
+import pandas as pd
 import json
 import dbConfig as cfg
 import sys
@@ -193,19 +194,23 @@ class main():
     def demonstrativeReport(self, month):
         base_root = srcUtils('pdf').get('src_utils')
         folder = utils.checkDir(base_root,month)
-        
+        getList = self.sql.getListPdfs()
+        df = pd.DataFrame.from_records(self.request.execOperation(getList[0], getList[1]),
+                                           columns=['ID_PDF']).sort_values(by=['ID_PDF'], ascending=True)
+        dfList = df['ID_PDF'].tolist()
 
         for index in self.gp:
             for value in tqdm(self.gp[index]):
-                pdf = exportPDF()
-                pdf.alias_nb_pages()
-                pdf.add_page()
-                pdf.header_2()
-                pdf.drawBodyDmt(value, month)
-                pdf.add_page()
-                pdf.drawBodydms(value, month)
-                file_= "Demonstrativo_"+ value +"_Mes_"+ month +".pdf"
-                pdf.output(folder+"/"+file_)
+                if (index == 'FMS'):
+                    for i in range(len(dfList)):
+                        pdf = exportPDF()
+                        pdf.alias_nb_pages()
+                        pdf.add_page()
+                        pdf.drawBodyDmt(value, month, dfList[i])
+                        pdf.add_page()
+                        pdf.drawBodydms(value, month, dfList[i])
+                        file_= "Demonstrativo_"+ value +"_Mes_"+ month +"_Grupo_Nº"+ dfList[i] +".pdf"
+                        pdf.output(folder+"/"+file_)
         self.zipTotal(month,'pdf')
 
 

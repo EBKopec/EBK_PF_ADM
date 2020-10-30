@@ -3,7 +3,7 @@ from utils import utils
 from datetime import datetime
 import calendar
 import pandas as pd
-logging.basicConfig(filename='main.proc.log',level=logging.DEBUG)
+logging.basicConfig(filename='E:\Projetos\Portal\PF\EBK_PF_Adm\BackEnd\src\main.proc.log',level=logging.DEBUG)
 #logging.basicConfig(filename='/var/log/flask/main.proc.log',level=logging.DEBUG)
 class sqls():
 
@@ -137,7 +137,9 @@ class sqls():
                      " , '4280558006439595' " \
                      " , '4280558006435052' " \
                      " , '4280558006437880' " \
-                     " , '4280558004008989' ) "\
+                     " , '4280558004008989' " \
+                     " , '4280558004051010' " \
+                     " , '4280558004011010' ) "\
                      " AND USERCOST != 0 " \
                      " AND (day(UTCTime) - day(localtime)) = 0" \
                      " AND ANI NOT IN ( '554200009990', '554200009991', '554200009992', '554200009993'" \
@@ -209,7 +211,9 @@ class sqls():
                      " , '4280558006439595' " \
                      " , '4280558006435052' " \
                      " , '4280558006437880' " \
-                     " , '4280558004008989' ) "\
+                     " , '4280558004008989' " \
+                     " , '4280558004051010' " \
+                     " , '4280558004011010' ) "\
                      " AND ORIG.BATCHID IN (270,303)" \
                      " AND DEST.BATCHID IN (270,303)" \
                      " AND ORIG.DISTRIBUTORID IN ('1','25') " \
@@ -224,20 +228,49 @@ class sqls():
 
     # Get Views
     def getViews(self, group, month):
-        view = " SELECT TIPO " \
-               " , ORIGEM " \
-               " , DATE_FORMAT(DATA, '%d/%m/%Y') DATA " \
-               " , DATE_FORMAT(HORA, '%H:%i:%s') HORA " \
-               " , DESTINO " \
-               " , CIDADE_DESTINO " \
-               " , DURACAO_REAL" \
-               " , CUSTO " \
-               " FROM VW_{}s  " \
-               " WHERE CUSTO > 0 " \
-               "   and MES_ID = {} " \
-               " ORDER BY 2 ASC, 3 ASC, 4 ASC".format(group, month)
+        view = " SELECT CT.TIPO " \
+               " , CT.ORIGEM " \
+               " , DATE_FORMAT(CT.DATA, '%d/%m/%Y') DATA " \
+               " , DATE_FORMAT(CT.HORA, '%H:%i:%s') HORA " \
+               " , CT.DESTINO " \
+               " , CT.CIDADE_DESTINO " \
+               " , CT.DURACAO_REAL" \
+               " , CT.CUSTO " \
+               " FROM VW_{}s as CT" \
+               " WHERE CT.CUSTO > 0 " \
+               "   AND CT.MES_ID = {} " \
+               " ORDER BY CT.ORIGEM ASC, 3 ASC, 4 ASC".format(group, month)
+        return view, 2
+    
+    # Get Views for Report
+    def getVw_PDF(self, group, month):
+        view = " SELECT CT.TIPO " \
+               " , CT.ORIGEM " \
+               " , DATE_FORMAT(CT.DATA, '%d/%m/%Y') DATA " \
+               " , DATE_FORMAT(CT.HORA, '%H:%i:%s') HORA " \
+               " , CT.DESTINO " \
+               " , CT.CIDADE_DESTINO " \
+               " , CT.DURACAO_REAL" \
+               " , CT.CUSTO " \
+               " , CARP.ID_PDF " \
+               " , CONCAT(RTRIM(L.DESCRICAO_LOCAL), ' - ', LTRIM(S.DESCRICAO_SETOR)) LOCAL"  \
+               " FROM VW_{}s as CT" \
+               " JOIN CONTROLE_AGRUPAMENTO_REPORT_PDF CARP ON CARP.LINHA = CT.ORIGEM " \
+               " JOIN CONTROLE_AGRUPAMENTO CA on CA.LINHA = CARP.LINHA " \
+               " JOIN LOCAL_SETOR LS ON LS.ID_LOCAL_SETOR = CA.ID_LOCAL_SETOR " \
+	           " JOIN LOCAL L ON L.ID_LOCAL = LS.ID_LOCAL " \
+	           " JOIN SETOR S ON S.ID_SETOR = LS.ID_SETOR " \
+               " WHERE CT.CUSTO > 0 " \
+               "   AND CT.MES_ID = {} " \
+               " ORDER BY CARP.ID_PDF ASC, CT.ORIGEM ASC, CT.TIPO ASC, 4 ASC, 5 ASC".format(group, month)
         return view, 2
 
+    # Get list of PDFs
+    def getListPdfs(self):
+        listPdf = " select id_pdf " \
+                  " from controle_agrupamento_report_pdf " \
+                  " group by id_pdf "
+        return listPdf, 2
 
     # Get Partial Ext value
     def getVlPtExt(self, group, month):
@@ -298,22 +331,13 @@ class sqls():
     # Get Grouping
     def getGroup(self, group, month):
         group = ['agrupamento', group, month]
-        # group = " select TL.TIPO_DESC " \
-        #         "      , CONCAT(sum(extract(MINUTE from (sec_to_time(time_to_sec(FAT.DURACAO_REAL))% 86400))) + " \
-        #         " EXTRACT(MINUTE FROM (sec_to_time(sum(extract(SECOND " \
-        #         " from (sec_to_time(time_to_sec(FAT.DURACAO_REAL))% 86400)))))), ':', " \
-        #         " (EXTRACT(SECOND FROM (sec_to_time(sum(extract(SECOND " \
-        #         " from (sec_to_time(time_to_sec(FAT.DURACAO_REAL))% 86400)))))))) Soma_de_Duracao " \
-        #         " , SUM(ROUND(FAT.CUSTO,2)) Soma_de_Custo " \
-        #         " from FATURAMENTO_{} FAT " \
-        #         " JOIN tarifa tar ON tar.BATCH_ID = fat.BATCH_ID " \
-        #         " AND (tar.TIPO_ID = fat.TIPO) " \
-        #         " JOIN tipo_ligacao tl ON tl.tipo_id = fat.TIPO " \
-        #         " WHERE DESTINO NOT LIKE '550800%' " \
-        #         " AND FAT.USER_ID IN ('{}') " \
-        #         " group by FAT.TIPO " \
-        #         " order by FAT.TIPO asc"
         return group, 3
+
+    # Get Grouping Ext Total
+    def getExtTotal(self, group, month):
+        group = ['SPC_RAMAL_TOTAL', group, month]
+        return group, 3
+
 
     # Get Users Group
     def getUsersGroup(self, table):
@@ -339,62 +363,6 @@ class sqls():
         # return execOperation(select, 0), table
         return select, 0, table
 
-    # # Get Qty Extensions
-    # def getQtyExt(self, groupId):
-    #     select = " SELECT COUNT(CA.LINHA) AS QTY  " \
-    #              "      , US.User_Group AS USUARIO " \
-    #              " FROM CONTROLE_AGRUPAMENTO CA " \
-    #              " JOIN USERS US ON US.USER_ID = CA.USER_GROUP_ID   " \
-    #              " where US.USER_ID = {} " \
-    #              " GROUP BY US.User_Group ".format(groupId)
-    #     return select, 2
-
-    # Get Fares
-    # def getFares(self):
-    #     select = " SELECT T.USER_ID AS 'USER_CODE' " \
-    #              "      , tl.tipo_desc AS 'CALL_TYPE' " \
-    #              "      , T.CUSTO  AS 'COST' " \
-    #              "      , T.FRANQUIA_MIN AS 'MIN_TELEPHONE_FRANCHISE' " \
-    #              "      , T.FRANQUIA_VALOR AS 'VALUES_TELEPHONE_FRANCHISE' " \
-    #              "      , T.VALOR_RAMAL AS 'VALUE_EXTENSION' " \
-    #              " FROM TIPO_LIGACAO tl " \
-    #              " join tarifa t on t.TIPO_ID = tl.TIPO_ID "
-    #     return select, 2
-
-    # # Activate Extensions
-    # def setExt(self, ext):
-    #     ext = ext
-    #     update = " UPDATE CONTROLE_AGRUPAMENTO " \
-    #              " SET STATUS = 'Y' " \
-    #              "   , DATA_CANCELAMENTO = NULL " \
-    #              "   , DATA_VALIDACAO_CLIENTE = SYSDATE() " \
-    #              " WHERE LINHA = {} ".format(ext)
-    #     return update, 5
-
-    # # Deactivate Extensions
-    # def deactivateExt(self, ext):
-    #     update = " UPDATE CONTROLE_AGRUPAMENTO " \
-    #              " SET STATUS = 'N' " \
-    #              "   , DATA_CANCELAMENTO = SYSDATE() " \
-    #              " WHERE LINHA = {} ".format(ext)
-    #     return update, 5
-
-    # # Change Groups
-    # def changeGroup(self, ext, group):
-    #     ext = ext
-    #     group = group
-    #     update = " UPDATE CONTROLE_AGRUPAMENTO " \
-    #              " SET USER_GROUP_ID = {} " \
-    #              "   , DATA_ALTERACAO_GRUPO = SYSDATE() " \
-    #              " WHERE LINHA = {} ".format(group, ext)
-    #     return update, 5
-
-    # # Register Extensions
-    # def registerExtensions(self, *data):
-    #     insert = "INSERT INTO CONTROLE_AGRUPAMENTO (LINHA,USER_GROUP_ID,TIPO_LINHA,DATA_ENVIO_NOVA,STATUS) " \
-    #              " VALUES ({},{},{},NOW(),'P')".format(data[0], data[1], data[2])
-
-    #     return insert, 5
 
     # Consumption to be billed
     def excessCons(self, group):
